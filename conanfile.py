@@ -1,9 +1,6 @@
 from conans.errors import ConanInvalidConfiguration
 from conans import ConanFile, tools
 from conan import ConanFile
-from conan.tools.files import copy
-from conan.tools.layout import basic_layout
-from conan.tools.build import check_min_cppstd
 from conan.errors import ConanInvalidConfiguration
 import os
 
@@ -33,10 +30,6 @@ class GnuArmEmbeddedToolchain(ConanFile):
         return "gnu-arm-embedded-toolchain.tar.xz"
 
     @property
-    def arm_toolchain_folder(self):
-        return "gnu-arm-embedded-toolchain.zip"
-
-    @property
     def download_link(self):
         if self.settings.os == "Windows":
             return "https://github.com/libhal/gnu-arm-embedded-toolchain/releases/download/v11.3/arm-gnu-toolchain-11.3.rel1-mingw-w64-i686-arm-none-eabi.zip"
@@ -47,12 +40,14 @@ class GnuArmEmbeddedToolchain(ConanFile):
         if self.settings.os == "Macos":
             return "https://github.com/libhal/gnu-arm-embedded-toolchain/releases/download/v11.3/arm-gnu-toolchain-11.3.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
         else:
-            raise Exception("Something went wrong")
+            raise ConanInvalidConfiguration(
+                f"The OS {self.settings.os} and architecture {self.settings.arch} is not supported")
 
     def build(self):
         self.output.info(
             f"Downloading GNU Arm Embedded Toolchain: {self.download_link}")
         tools.download(self.download_link, self.arm_toolchain_archive)
+        self.output.info(f"Extracting GNU Arm Embedded Toolchain...")
         tools.unzip(self.arm_toolchain_archive, strip_root=True)
         os.unlink(self.arm_toolchain_archive)
 
@@ -61,4 +56,5 @@ class GnuArmEmbeddedToolchain(ConanFile):
                   dst=self.package_folder, keep_path=True)
 
     def package_info(self):
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+        bin_folder = os.path.join(self.package_folder, "bin")
+        self.env_info.PATH.append(bin_folder)
