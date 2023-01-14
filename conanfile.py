@@ -1,7 +1,6 @@
 from conans.errors import ConanInvalidConfiguration
-from conans import ConanFile, tools
-from conan import ConanFile
-from conan.errors import ConanInvalidConfiguration
+from conans import ConanFile
+from conan.tools.files import get
 import os
 
 
@@ -19,6 +18,7 @@ class GnuArmEmbeddedToolchain(ConanFile):
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
     settings = "os", "arch"
+    exports_sources = ("toolchain.cmake")
 
     def validate(self):
         pass
@@ -46,15 +46,19 @@ class GnuArmEmbeddedToolchain(ConanFile):
     def build(self):
         self.output.info(
             f"Downloading GNU Arm Embedded Toolchain: {self.download_link}")
-        tools.download(self.download_link, self.arm_toolchain_archive)
-        self.output.info(f"Extracting GNU Arm Embedded Toolchain...")
-        tools.unzip(self.arm_toolchain_archive, strip_root=True)
-        os.unlink(self.arm_toolchain_archive)
+        get(self, self.download_link, strip_root=True)
 
     def package(self):
         self.copy(pattern="*", src=self.build_folder,
                   dst=self.package_folder, keep_path=True)
+        self.copy("toolchain.cmake", src=self.source_folder,
+                  dst=self.package_folder)
 
     def package_info(self):
+        # Add bin directory to PATH
         bin_folder = os.path.join(self.package_folder, "bin")
         self.env_info.PATH.append(bin_folder)
+        # Add toolchain.cmake to user_toolchain configuration info to be used
+        # by CMakeToolchain generator
+        f = os.path.join(self.package_folder, "toolchain.cmake")
+        self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
