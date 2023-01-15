@@ -9,6 +9,9 @@ required_conan_version = ">=1.50.0"
 
 class GnuArmEmbeddedToolchain(ConanFile):
     name = "gnu-arm-embedded-toolchain"
+    # All changes to the version number will be in patch. The first two numbers
+    # Represent the GCC version. The patch number represents changes to the
+    # recipe or toolchain.cmake file
     version = "11.3.0"
     license = "GPL"
     url = "https://github.com/conan-io/conan-center-index"
@@ -18,7 +21,6 @@ class GnuArmEmbeddedToolchain(ConanFile):
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
     settings = "os", "arch"
-    exports_sources = ("toolchain.cmake")
 
     def validate(self):
         pass
@@ -51,14 +53,8 @@ class GnuArmEmbeddedToolchain(ConanFile):
     def package(self):
         self.copy(pattern="*", src=self.build_folder,
                   dst=self.package_folder, keep_path=True)
-        self.copy("toolchain.cmake", src=self.source_folder,
-                  dst=self.package_folder)
 
     def package_info(self):
         # Add bin directory to PATH
         bin_folder = os.path.join(self.package_folder, "bin")
         self.env_info.PATH.append(bin_folder)
-        # Add toolchain.cmake to user_toolchain configuration info to be used
-        # by CMakeToolchain generator
-        f = os.path.join(self.package_folder, "toolchain.cmake")
-        self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
