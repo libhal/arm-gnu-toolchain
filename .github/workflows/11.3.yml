@@ -1,0 +1,17 @@
+name: 🚀 11.3 Deploy
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 12 * * 0'
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy.yml@main
+    with:
+      library: 11.3
+    secrets: inherit

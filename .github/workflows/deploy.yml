@@ -2,6 +2,10 @@ name: 🚀 deploy
 
 on:
   workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
 
 jobs:
   deploy:
@@ -28,6 +32,7 @@ jobs:
         run: conan config set general.revisions_enabled=True
 
       - name: 📦 Create Conan Package
+        working-directory: ${{ inputs.library }}
         run: conan create .
 
       - name: 📡 Sign into JFrog Artifactory
