@@ -21,7 +21,7 @@ The following `conanfile.txt` will enable cross compiling with conan and cmake:
 
 [tool_requires]
 gnu-arm-embedded-toolchain/11.3.0
-cmake-arm-embedded/0.1.0
+cmake-arm-embedded/0.1.1
 
 [generators]
 CMakeDeps

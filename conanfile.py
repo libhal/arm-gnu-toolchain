@@ -13,7 +13,7 @@ class GnuArmEmbeddedToolchain(ConanFile):
     # Represent the GCC version. The patch number represents changes to the
     # recipe or toolchain.cmake file
     version = "11.3.0"
-    license = "GPL"
+    license = "GPL-3.0-only"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads"
     description = ("Conan installer for the GNU Arm Embedded Toolchain")
