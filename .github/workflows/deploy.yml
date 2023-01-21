@@ -5,9 +5,11 @@ on:
   push:
     branches:
       - '11.3'
+      - '12.2'
   pull_request:
     branches:
       - '11.3'
+      - '12.2'
 
 jobs:
   deploy:
