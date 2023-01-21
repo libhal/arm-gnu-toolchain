@@ -1,15 +1,7 @@
 name: 🚀 deploy
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - '11.3'
-      - '12.2'
-  pull_request:
-    branches:
-      - '11.3'
-      - '12.2'
+  workflow_call:
 
 jobs:
   deploy:
