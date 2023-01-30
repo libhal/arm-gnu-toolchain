@@ -7,10 +7,6 @@ To use this with conan add this line to your `conanfile.txt`:
 gnu-arm-embedded-toolchain/11.3.0
 ```
 
-The `libhal-trunk` server doesn't cache the binaries because they are cached
-by github so when you run `conan install`, you will need to add
-`--build=missing`.
-
 ## Using with CMake & Conan
 
 The following `conanfile.txt` will enable cross compiling with conan and cmake:
