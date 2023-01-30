@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     with:
       library: "11.3"
     secrets: inherit
