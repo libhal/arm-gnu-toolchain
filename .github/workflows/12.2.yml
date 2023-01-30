@@ -1,4 +1,4 @@
-name: 🚀 11.3 Deploy
+name: 🚀 12.2 Deploy
 
 on:
   workflow_dispatch:
@@ -11,5 +11,5 @@ jobs:
   deploy:
     uses: ./.github/workflows/deploy.yml@main
     with:
-      library: "11.3"
+      library: "12.2"
     secrets: inherit
