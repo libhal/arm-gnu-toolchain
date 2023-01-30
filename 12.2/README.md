@@ -1,10 +1,10 @@
-# gnu-arm-embedded-toolchain 11.3
+# gnu-arm-embedded-toolchain 12.2
 
 To use this with conan add this line to your `conanfile.txt`:
 
 ```
 [tool_requires]
-gnu-arm-embedded-toolchain/11.3.0
+gnu-arm-embedded-toolchain/12.2.0
 ```
 
 ## Using with CMake & Conan
@@ -16,7 +16,7 @@ The following `conanfile.txt` will enable cross compiling with conan and cmake:
 # target libraries here
 
 [tool_requires]
-gnu-arm-embedded-toolchain/11.3.0
+gnu-arm-embedded-toolchain/12.2.0
 cmake-arm-embedded/0.1.1
 
 [generators]

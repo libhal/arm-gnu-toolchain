@@ -1,0 +1,5 @@
+[requires]
+gnu-arm-embedded-toolchain/11.3.0
+
+[generators]
+virtualrunenv
