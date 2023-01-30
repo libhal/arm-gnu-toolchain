@@ -32,7 +32,7 @@ jobs:
         run: conan config set general.revisions_enabled=True
 
       - name: 📦 Create Conan Package
-        working-directory: ${{ inputs.library }}
+        working-directory: ${{ inputs.version }}
         run: conan create .
 
       - name: 📡 Sign into JFrog Artifactory
