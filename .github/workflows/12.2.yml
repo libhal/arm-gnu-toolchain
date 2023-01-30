@@ -11,5 +11,5 @@ jobs:
   deploy:
     uses: ./.github/workflows/deploy.yml
     with:
-      library: "12.2"
+      version: "12.2"
     secrets: inherit
