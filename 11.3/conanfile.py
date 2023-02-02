@@ -21,7 +21,7 @@ class GnuArmEmbeddedToolchain(ConanFile):
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
     settings = "os", "arch"
-    build_policy = "always"
+    build_policy = "missing"
 
     def validate(self):
         pass
