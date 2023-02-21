@@ -58,4 +58,5 @@ class GnuArmEmbeddedToolchain(ConanFile):
     def package_info(self):
         # Add bin directory to PATH
         bin_folder = os.path.join(self.package_folder, "bin")
-        self.env_info.PATH.append(bin_folder)
+        self.buildenv_info.append_path("PATH", bin_folder)
+        self.cpp_info.bindirs = [bin_folder]
