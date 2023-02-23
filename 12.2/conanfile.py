@@ -1,6 +1,6 @@
-from conans.errors import ConanInvalidConfiguration
-from conans import ConanFile
-from conan.tools.files import get
+from conan.errors import ConanInvalidConfiguration
+from conan import ConanFile
+from conan.tools.files import get, copy
 import os
 
 
@@ -43,7 +43,7 @@ class GnuArmEmbeddedToolchain(ConanFile):
         if self.settings.arch == "x86_64" and self.settings.os == "Macos":
             return "https://github.com/libhal/gnu-arm-embedded-toolchain/releases/download/v12.2/arm-gnu-toolchain-12.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
         if str(self.settings.arch).startswith("arm") and self.settings.os == "Macos":
-            return "https://github.com/libhal/gnu-arm-embedded-toolchain/releases/download/v12.2/arm-gnu-toolchain-12.2.rel1-darwin-aarch64-arm-none-eabi.tar.xz"
+            return "https://github.com/libhal/gnu-arm-embedded-toolchain/releases/download/v12.2/arm-gnu-toolchain-12.2.rel1-darwin-arm64-arm-none-eabi.tar.xz"
         else:
             raise ConanInvalidConfiguration(
                 f"The OS {self.settings.os} and architecture {self.settings.arch} is not supported")
@@ -54,8 +54,8 @@ class GnuArmEmbeddedToolchain(ConanFile):
         get(self, self.download_link, strip_root=True)
 
     def package(self):
-        self.copy(pattern="*", src=self.build_folder,
-                  dst=self.package_folder, keep_path=True)
+        copy(self, pattern="*", src=self.build_folder,
+             dst=self.package_folder, keep_path=True)
 
     def package_info(self):
         # Add bin directory to PATH

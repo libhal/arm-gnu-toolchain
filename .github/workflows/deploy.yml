@@ -22,11 +22,11 @@ jobs:
           fetch-depth: 0
 
       - name: 📥 Install CMake & Conan
-        run: pip3 install cmake conan
+        run: pip3 install cmake conan==1.57.0
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: |
-             conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan --insert
+             conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
       - name: 📡 Enable conan revision mode
         run: conan config set general.revisions_enabled=True

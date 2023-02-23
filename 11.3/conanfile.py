@@ -1,6 +1,6 @@
-from conans.errors import ConanInvalidConfiguration
-from conans import ConanFile
-from conan.tools.files import get
+from conan.errors import ConanInvalidConfiguration
+from conan import ConanFile
+from conan.tools.files import get, copy
 import os
 
 
@@ -52,8 +52,8 @@ class GnuArmEmbeddedToolchain(ConanFile):
         get(self, self.download_link, strip_root=True)
 
     def package(self):
-        self.copy(pattern="*", src=self.build_folder,
-                  dst=self.package_folder, keep_path=True)
+        copy(self, pattern="*", src=self.build_folder,
+             dst=self.package_folder, keep_path=True)
 
     def package_info(self):
         # Add bin directory to PATH
