@@ -22,25 +22,28 @@ jobs:
           fetch-depth: 0
 
       - name: 📥 Install CMake & Conan
-        run: pip3 install cmake conan==1.57.0
+        run: pip3 install cmake conan==2.0.1
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: |
              conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
-      - name: 📡 Enable conan revision mode
-        run: conan config set general.revisions_enabled=True
+      - name: 📡 Create and setup default profile
+        run: conan profile detect --force
+
+      - name: 👁️‍🗨️ Show conan profile
+        run: conan profile show
 
       - name: 📦 Create Conan Package
         working-directory: ${{ inputs.version }}
         run: conan create .
 
       - name: 📡 Sign into JFrog Artifactory
-        if: ${{ github.ref == 'refs/heads/main' && runner.os != 'Windows' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         env:
           API_KEY: ${{ secrets.JFROG_LIBHAL_TRUNK_API_KEY }}
           JFROG_USER: ${{ secrets.JFROG_LIBHAL_TRUNK_USER }}
-        run: conan user -p $API_KEY -r libhal-trunk $JFROG_USER
+        run: conan remote login -p $API_KEY libhal-trunk $JFROG_USER
 
       - name: 📡 Sign into JFrog Artifactory (Powershell)
         if: ${{ github.ref == 'refs/heads/main' && runner.os == 'Windows' }}
