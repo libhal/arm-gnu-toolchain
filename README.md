@@ -1,4 +1,4 @@
-# libhal GNU ARM Embedded Toolchain Repo
+# ARM GNU Toolchain Repo
 
-Here you can find conan packages for the GNU ARM Embedded Toolchain packages
-used for libhal, but reusable for any other project that uses conan as well.
+Here you can find conan packages for the ARM GNU Toolchain packages used by
+libhal project.
