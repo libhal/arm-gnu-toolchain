@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: 📥 Install CMake & Conan
-        run: pip3 install cmake conan==2.0.1
+        run: pip3 install cmake conan==2.0.6
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: |
@@ -39,7 +39,7 @@ jobs:
         run: conan create . --version=${{ inputs.version }} -b missing
 
       - name: 📡 Sign into JFrog Artifactory
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' && runner.os != 'Windows' }}
         env:
           API_KEY: ${{ secrets.JFROG_LIBHAL_TRUNK_API_KEY }}
           JFROG_USER: ${{ secrets.JFROG_LIBHAL_TRUNK_USER }}
