@@ -22,6 +22,7 @@ class ArmGnuToolchain(ConanFile):
     exports_sources = "toolchain.cmake"
     package_type = "application"
     short_paths = True
+    build_policy = "missing"
 
     @property
     def download_info(self):
