@@ -124,9 +124,14 @@ class ArmGnuToolchain(ConanFile):
             "-mthumb",
             "-ffunction-sections",
             "-fdata-sections",
+        ]
+
+        gcc_cxx_flags = [
             "-fno-exceptions",
             "-fno-rtti"
         ]
+
+        gcc_cxx_flags.extend(gcc_c_flags)
 
         linker_flags = [
             "-mthumb",
@@ -135,5 +140,5 @@ class ArmGnuToolchain(ConanFile):
         ]
 
         self.conf_info.define("tools.build:cflags", gcc_c_flags)
-        self.conf_info.define("tools.build:cxxflags", gcc_c_flags)
+        self.conf_info.define("tools.build:cxxflags", gcc_cxx_flags)
         self.conf_info.define("tools.build:exelinkflags", linker_flags)
