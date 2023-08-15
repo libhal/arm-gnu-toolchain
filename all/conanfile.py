@@ -71,6 +71,13 @@ class ArmGnuToolchain(ConanFile):
     def build(self):
         download(self, self.license_url, "LICENSE", verify=False)
 
+        if str(self.version) == "11.3.0":
+            get(self,
+                "https://keithp.com/picolibc/dist/gnu-arm-embedded/picolibc-1.7.9-11.3.rel1.zip")
+        elif str(self.version) == "12.2.1":
+            get(self,
+                "https://keithp.com/picolibc/dist/gnu-arm-embedded/picolibc-1.8-12.2.rel1.zip")
+
         get(self,
             **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)],
             strip_root=True)
