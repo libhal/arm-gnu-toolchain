@@ -75,10 +75,10 @@ class ArmGnuToolchain(ConanFile):
 
         if str(self.version) == "11.3.0":
             get(self,
-                "https://github.com/libhal/arm-gnu-toolchain/releases/download/picolibc/picolibc-1.7.9-11.3.rel1.zip", destination=destination_pico)
+                "https://github.com/picolibc/picolibc/releases/download/1.7.9/picolibc-1.7.9-11.3.rel1.zip", destination=destination_pico)
         elif str(self.version) == "12.2.1":
             get(self,
-                "https://github.com/libhal/arm-gnu-toolchain/releases/download/picolibc/picolibc-1.8-12.2.rel1.zip", destination=destination_pico)
+                "https://github.com/picolibc/picolibc/releases/download/1.8/picolibc-1.8-12.2.rel1.zip", destination=destination_pico)
 
         get(self,
             **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)], destination=destination_toolchain, strip_root=True)
