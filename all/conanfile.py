@@ -4,7 +4,7 @@ from conan.errors import ConanInvalidConfiguration
 import os
 
 
-required_conan_version = ">=2.0.6"
+required_conan_version = ">=1.60.2"
 
 
 class ArmGnuToolchain(ConanFile):
@@ -20,31 +20,56 @@ class ArmGnuToolchain(ConanFile):
               "cortex-m35p", "cortex-m33")
     settings = "os", "arch", 'compiler', 'build_type'
     exports_sources = "toolchain.cmake"
-    package_type = "application"
+    # package_type = "application"
     short_paths = True
-    build_policy = "missing"
-
-    @property
-    def download_info(self):
-        version = self.version
-        os = str(self._settings_build.os)
-        arch = str(self._settings_build.arch)
-        return self.conan_data.get("sources", {}).get(version, {}).get(os, {}).get(arch)
 
     @property
     def license_url(self):
-        # All versions of arm-gnu-toolchain (previously called gnu-arm-embedded)
-        # before 12.3.0 did NOT include their licenses in their package
-        # releases. Instead they are a glob of multiple HTML licenses fused
-        # together into a EULA.html file. This is a work around for those
-        # versions.
-        if self.version == "11.3.0" or self.version == "12.2.1":
-            return "https://gist.githubusercontent.com/kammce/dc566a05f6ab2787ceef5b706012e7a2/raw/4cb8ab752d7c0f87cc074afa4e548a2be8766210/EULA.html"
-        return None
+        # License URL found from the "EULA" button on the
+        # https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+        # web page.
+        if self.version == "11.3.0":
+            return "https://developer.arm.com/GetEula?Id=ff19df33-da82-491a-ab50-c605d4589a26"
+        if self.version == "12.2.1":
+            return "https://developer.arm.com/GetEula?Id=2821586b-44d0-4e75-a06d-4279cd97eaae"
+        if self.version == "12.3.1":
+            return "https://developer.arm.com/GetEula?Id=aa3d692d-bc99-4c8c-bce2-588181ddde13"
+        else:
+            # This should only happen if the toolchain is packaged with its
+            # license file.
+            return None
 
     @property
     def _settings_build(self):
         return getattr(self, "settings_build", self.settings)
+
+    @property
+    def _architecture_flags(self):
+        flag_map = {
+            "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
+            "cortex-m0plus": ["-mcpu=cortex-m0plus", "-mfloat-abi=soft"],
+            "cortex-m1": ["-mcpu=cortex-m1", "-mfloat-abi=soft"],
+            "cortex-m3": ["-mcpu=cortex-m3", "-mfloat-abi=soft"],
+            "cortex-m4": ["-mcpu=cortex-m4", "-mfloat-abi=soft"],
+            "cortex-m4f": ["-mcpu=cortex-m4", "-mfloat-abi=hard"],
+            "cortex-m7": ["-mcpu=cortex-m7", "-mfloat-abi=soft"],
+            "cortex-m7f": ["-mcpu=cortex-m7", "-mfloat-abi=hard"],
+            "cortex-m7d": ["-mcpu=cortex-m7", "-mfloat-abi=hard"],
+            "cortex-m23": ["-mcpu=cortex-m23", "-mfloat-abi=soft"],
+            "cortex-m33": ["-mcpu=cortex-m33", "-mfloat-abi=soft"],
+            "cortex-m33f": ["-mcpu=cortex-m33", "-mfloat-abi=hard"],
+            "cortex-m33p": ["-mcpu=cortex-m33p", "-mfloat-abi=soft"],
+            "cortex-m35pf": ["-mcpu=cortex-m35p", "-mfloat-abi=hard"],
+            "cortex-m55": ["-mcpu=cortex-m55", "-mfloat-abi=soft"],
+            # TODO: Add "cortex-m55" half floating point
+            # TODO: Add "cortex-m55" single floating point
+            # TODO: Add "cortex-m55" double floating point
+            "cortex-m85": ["-mcpu=cortex-m85", "-mfloat-abi=soft"],
+            # TODO: Add "cortex-m85" half floating point
+            # TODO: Add "cortex-m85" single floating point
+            # TODO: Add "cortex-m85" double floating point
+        }
+        return flag_map.get(str(self.settings.arch))
 
     def package_id(self):
         del self.info.settings.compiler
@@ -55,7 +80,8 @@ class ArmGnuToolchain(ConanFile):
         if not self._settings_build.os in supported_build_operating_systems:
             raise ConanInvalidConfiguration(
                 f"The build os '{self._settings_build.os}' is not supported. "
-                f"Pre-compiled binaries are only available for {supported_build_operating_systems}."
+                "Pre-compiled binaries are only available for "
+                f"{supported_build_operating_systems}."
             )
 
         supported_build_architectures = {
@@ -63,13 +89,17 @@ class ArmGnuToolchain(ConanFile):
             "Macos": ["armv8", "x86_64"],
             "Windows": ["x86_64"],
         }
+
         if (
             not self._settings_build.arch
             in supported_build_architectures[str(self._settings_build.os)]
         ):
+            build_os = str(self._settings_build.os)
             raise ConanInvalidConfiguration(
-                f"The build architecture '{self._settings_build.arch}' is not supported for {self._settings_build.os}. "
-                f"Pre-compiled binaries are only available for {supported_build_architectures[str(self._settings_build.os)]}."
+                f"The build architecture '{self._settings_build.arch}' "
+                f"is not supported for {self._settings_build.os}. "
+                "Pre-compiled binaries are only available for "
+                f"{supported_build_architectures[build_os]}."
             )
 
     def source(self):
@@ -79,56 +109,24 @@ class ArmGnuToolchain(ConanFile):
         if self.license_url:
             download(self, self.license_url, "LICENSE", verify=False)
 
-        destination_pico = os.path.join(self.build_folder, "picolibc/")
-        destination_toolchain = os.path.join(self.build_folder, "toolchain/")
-
-        if str(self.version) == "11.3.0":
-            get(self,
-                "https://github.com/picolibc/picolibc/releases/download/1.7.9/picolibc-1.7.9-11.3.rel1.zip", destination=destination_pico)
-        elif str(self.version) == "12.2.1":
-            get(self,
-                "https://github.com/picolibc/picolibc/releases/download/1.8/picolibc-1.8-12.2.rel1.zip", destination=destination_pico)
-        elif str(self.version) == "12.3.1":
-            get(self,
-                "https://github.com/picolibc/picolibc/releases/download/1.8.3/picolibc-1.8.3-12.3-rel1.zip",
-                destination=destination_pico)
-
         get(self,
-            **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)], destination=destination_toolchain, strip_root=True)
+            **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)],
+            destination=self.build_folder, strip_root=True)
 
     def package(self):
-        picolibc_source = os.path.join(self.build_folder, "picolibc/")
-        toolchain_source = os.path.join(self.build_folder, "toolchain/")
-        destination = os.path.join(self.package_folder, "bin/")
+        destination = os.path.join(self.package_folder, "bin")
 
-        # Copy Picolibc files
-
-        copy(self, pattern="arm-none-eabi/*", src=picolibc_source,
+        copy(self, pattern="arm-none-eabi/*", src=self.build_folder,
              dst=destination, keep_path=True)
-        copy(self, pattern="bin/*", src=picolibc_source,
+        copy(self, pattern="bin/*", src=self.build_folder,
              dst=destination, keep_path=True)
-        copy(self, pattern="include/*", src=picolibc_source,
+        copy(self, pattern="include/*", src=self.build_folder,
              dst=destination, keep_path=True)
-        copy(self, pattern="lib/*", src=picolibc_source,
+        copy(self, pattern="lib/*", src=self.build_folder,
              dst=destination, keep_path=True)
-        copy(self, pattern="libexec/*", src=picolibc_source,
+        copy(self, pattern="libexec/*", src=self.build_folder,
              dst=destination, keep_path=True)
-        copy(self, pattern="share/*", src=picolibc_source,
-             dst=destination, keep_path=True)
-
-        # Copy Toolchain Files
-
-        copy(self, pattern="arm-none-eabi/*", src=toolchain_source,
-             dst=destination, keep_path=True)
-        copy(self, pattern="bin/*", src=toolchain_source,
-             dst=destination, keep_path=True)
-        copy(self, pattern="include/*", src=toolchain_source,
-             dst=destination, keep_path=True)
-        copy(self, pattern="lib/*", src=toolchain_source,
-             dst=destination, keep_path=True)
-        copy(self, pattern="libexec/*", src=toolchain_source,
-             dst=destination, keep_path=True)
-        copy(self, pattern="share/*", src=toolchain_source,
+        copy(self, pattern="share/*", src=self.build_folder,
              dst=destination, keep_path=True)
 
         license_dir = os.path.join(self.package_folder, "licenses/")
@@ -159,3 +157,8 @@ class ArmGnuToolchain(ConanFile):
 
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
         self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
+
+        if self._architecture_flags:
+            self.cpp_info.cflags = self._architecture_flags
+            self.cpp_info.cxxflags = self._architecture_flags
+            self.cpp_info.exelinkflags = self._architecture_flags

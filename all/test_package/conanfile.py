@@ -1,5 +1,6 @@
 from conan import ConanFile
 from conan.tools.cmake import CMake, cmake_layout
+from conan.errors import ConanInvalidConfiguration
 
 
 class TestPackageConan(ConanFile):
@@ -7,6 +8,7 @@ class TestPackageConan(ConanFile):
     generators = "CMakeDeps", "CMakeToolchain", "VirtualBuildEnv"
 
     def build_requirements(self):
+        self.tool_requires("cmake/3.27.1")
         self.tool_requires(self.tested_reference_str)
 
     def layout(self):
