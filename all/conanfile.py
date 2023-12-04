@@ -22,18 +22,6 @@ class ArmGnuToolchain(ConanFile):
     exports_sources = "toolchain.cmake"
     package_type = "application"
     short_paths = True
-    options = {
-        "stdlibc": [
-            "linux",
-            "nano",
-            "nosys",
-            "nano+nosys",
-            "ANY",
-        ]
-    }
-    default_options = {
-        "stdlibc": "nano+nosys",
-    }
 
     @property
     def license_url(self):
@@ -94,9 +82,6 @@ class ArmGnuToolchain(ConanFile):
         if self._should_inject_compiler_flags:
             return self._arch_map[str(self.settings_target.get_safe('arch'))]
         return []
-
-    def package_id(self):
-        del self.info.options.stdlibc
 
     def validate(self):
         supported_build_operating_systems = ["Linux", "Macos", "Windows"]
@@ -182,11 +167,11 @@ class ArmGnuToolchain(ConanFile):
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
         self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
 
-        stdlibc_map = {
+        libc_flag_map = {
             "linux": ["--specs=linux.specs"],
             "nano": ["--specs=nano.specs"],
             "nosys": ["--specs=nosys.specs"],
-            "nano+nosys": ["--specs=nano.specs", "--specs=nosys.specs"],
+            "nano_nosys": ["--specs=nano.specs", "--specs=nosys.specs"],
         }
 
         if self._should_inject_compiler_flags:
@@ -197,13 +182,14 @@ class ArmGnuToolchain(ConanFile):
             self.conf_info.append("tools.build:exelinkflags",
                                   self._c_and_cxx_compiler_flags)
 
-            stdlibc_flags = stdlibc_map.get(str(self.options.stdlibc))
-            if stdlibc_flags:
-                self.conf_info.append(
-                    "tools.build:exelinkflags", stdlibc_flags)
-
-            self.output.info(f"options.stdlibc: {str(self.options.stdlibc)}")
             self.output.info(f"C/C++ flags: {self._c_and_cxx_compiler_flags}")
-            self.output.info(f"link flags: {stdlibc_flags}")
+
+            libc = self.settings_target.compiler.get_safe("libc")
+            if libc and str(libc) in libc_flag_map:
+                libc_flags = libc_flag_map.get(str(libc))
+                self.conf_info.append(
+                    "tools.build:exelinkflags", libc_flags)
+                self.output.info(f"compiler.libc: {str(libc)}")
+                self.output.info(f"link flags: {libc_flags}")
         else:
             self.output.warning(f"target arch not present")

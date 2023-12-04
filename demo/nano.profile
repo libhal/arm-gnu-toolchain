@@ -3,9 +3,7 @@ build_type=MinSizeRel
 compiler=gcc
 compiler.cppstd=20
 compiler.libcxx=libstdc++
+compiler.libc=nano
 compiler.version=12.2
 arch=cortex-m4f
 os=baremetal
-
-[options]
-*:stdlibc=picolibc
