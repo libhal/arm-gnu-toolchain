@@ -1,0 +1,2 @@
+[options]
+*:stdlibc=picolibc

@@ -20,8 +20,20 @@ class ArmGnuToolchain(ConanFile):
               "cortex-m35p", "cortex-m33")
     settings = "os", "arch", 'compiler', 'build_type'
     exports_sources = "toolchain.cmake"
-    # package_type = "application"
+    package_type = "application"
     short_paths = True
+    options = {
+        "stdlibc": [
+            "linux",
+            "nano",
+            "nosys",
+            "nano+nosys",
+            "ANY",
+        ]
+    }
+    default_options = {
+        "stdlibc": "nano+nosys",
+    }
 
     @property
     def license_url(self):
@@ -44,8 +56,8 @@ class ArmGnuToolchain(ConanFile):
         return getattr(self, "settings_build", self.settings)
 
     @property
-    def _architecture_flags(self):
-        flag_map = {
+    def _arch_map(self):
+        return {
             "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
             "cortex-m0plus": ["-mcpu=cortex-m0plus", "-mfloat-abi=soft"],
             "cortex-m1": ["-mcpu=cortex-m1", "-mfloat-abi=soft"],
@@ -53,8 +65,10 @@ class ArmGnuToolchain(ConanFile):
             "cortex-m4": ["-mcpu=cortex-m4", "-mfloat-abi=soft"],
             "cortex-m4f": ["-mcpu=cortex-m4", "-mfloat-abi=hard"],
             "cortex-m7": ["-mcpu=cortex-m7", "-mfloat-abi=soft"],
-            "cortex-m7f": ["-mcpu=cortex-m7", "-mfloat-abi=hard"],
-            "cortex-m7d": ["-mcpu=cortex-m7", "-mfloat-abi=hard"],
+            "cortex-m7f": [
+                "-mcpu=cortex-m7", "-mfloat-abi=hard", "-mfpu=fpv5-sp-d16"],
+            "cortex-m7d": [
+                "-mcpu=cortex-m7", "-mfloat-abi=hard", "-mfpu=fpv5-d16"],
             "cortex-m23": ["-mcpu=cortex-m23", "-mfloat-abi=soft"],
             "cortex-m33": ["-mcpu=cortex-m33", "-mfloat-abi=soft"],
             "cortex-m33f": ["-mcpu=cortex-m33", "-mfloat-abi=hard"],
@@ -69,11 +83,20 @@ class ArmGnuToolchain(ConanFile):
             # TODO: Add "cortex-m85" single floating point
             # TODO: Add "cortex-m85" double floating point
         }
-        return flag_map.get(str(self.settings.arch))
+
+    @property
+    def _should_inject_compiler_flags(self):
+        return (self.settings_target and
+                self.settings_target.get_safe('arch') in self._arch_map)
+
+    @property
+    def _c_and_cxx_compiler_flags(self):
+        if self._should_inject_compiler_flags:
+            return self._arch_map[str(self.settings_target.get_safe('arch'))]
+        return []
 
     def package_id(self):
-        del self.info.settings.compiler
-        del self.info.settings.build_type
+        del self.info.options.stdlibc
 
     def validate(self):
         supported_build_operating_systems = ["Linux", "Macos", "Windows"]
@@ -148,6 +171,7 @@ class ArmGnuToolchain(ConanFile):
             "tools.cmake.cmaketoolchain:system_name", "Generic")
         self.conf_info.define(
             "tools.cmake.cmaketoolchain:system_processor", "ARM")
+
         self.conf_info.define("tools.build.cross_building:can_run", False)
         self.conf_info.define("tools.build:compiler_executables", {
             "c": "arm-none-eabi-gcc",
@@ -158,7 +182,28 @@ class ArmGnuToolchain(ConanFile):
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
         self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
 
-        if self._architecture_flags:
-            self.cpp_info.cflags = self._architecture_flags
-            self.cpp_info.cxxflags = self._architecture_flags
-            self.cpp_info.exelinkflags = self._architecture_flags
+        stdlibc_map = {
+            "linux": ["--specs=linux.specs"],
+            "nano": ["--specs=nano.specs"],
+            "nosys": ["--specs=nosys.specs"],
+            "nano+nosys": ["--specs=nano.specs", "--specs=nosys.specs"],
+        }
+
+        if self._should_inject_compiler_flags:
+            self.conf_info.append("tools.build:cflags",
+                                  self._c_and_cxx_compiler_flags)
+            self.conf_info.append("tools.build:cxxflags",
+                                  self._c_and_cxx_compiler_flags)
+            self.conf_info.append("tools.build:exelinkflags",
+                                  self._c_and_cxx_compiler_flags)
+
+            stdlibc_flags = stdlibc_map.get(str(self.options.stdlibc))
+            if stdlibc_flags:
+                self.conf_info.append(
+                    "tools.build:exelinkflags", stdlibc_flags)
+
+            self.output.info(f"options.stdlibc: {str(self.options.stdlibc)}")
+            self.output.info(f"C/C++ flags: {self._c_and_cxx_compiler_flags}")
+            self.output.info(f"link flags: {stdlibc_flags}")
+        else:
+            self.output.warning(f"target arch not present")
