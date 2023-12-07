@@ -21,6 +21,7 @@ class ArmGnuToolchain(ConanFile):
     settings = "os", "arch", 'compiler', 'build_type'
     exports_sources = "toolchain.cmake"
     package_type = "application"
+    build_policy = "missing"
     short_paths = True
 
     @property
