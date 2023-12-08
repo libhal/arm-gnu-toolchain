@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: 📥 Install CMake & Conan
-        run: pip3 install cmake conan==2.0.6
+        run: pip3 install conan==2.0.13
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: |
@@ -34,9 +34,16 @@ jobs:
       - name: 👁️‍🗨️ Show conan profile
         run: conan profile show
 
+      - name: 📡 Install libhal settings_user.yml
+        run: conan config install -sf profiles/baremetal/v2/ https://github.com/libhal/conan-config.git
+
       - name: 📦 Create Conan Package
         working-directory: all
-        run: conan create . --version=${{ inputs.version }} -b missing
+        run: conan create . --version=${{ inputs.version }}
+
+      - name: 📦 Build Demos Conan Package
+        working-directory: demo
+        run: conan build . -s compiler.version=${{ inputs.version }} -pr nano_nosys
 
       - name: 📡 Sign into JFrog Artifactory
         if: ${{ github.ref == 'refs/heads/main' && runner.os != 'Windows' }}

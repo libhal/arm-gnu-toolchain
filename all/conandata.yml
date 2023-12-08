@@ -1,5 +1,5 @@
 sources:
-  "11.3.0":
+  "11.3":
     "Linux":
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/11.3.rel1/binrel/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi.tar.xz"
@@ -18,7 +18,7 @@ sources:
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/11.3.rel1/binrel/arm-gnu-toolchain-11.3.rel1-mingw-w64-i686-arm-none-eabi.zip"
         sha256: "23f24595aa575fba4fdb0cb086df4b053862af60837502cb7e52bd4fb3d76c36"
-  "12.2.1":
+  "12.2":
     "Linux":
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/12.2.rel1/binrel/arm-gnu-toolchain-12.2.rel1-x86_64-arm-none-eabi.tar.xz"
@@ -37,7 +37,7 @@ sources:
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/12.2.rel1/binrel/arm-gnu-toolchain-12.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
         sha256: "ad1427496cde9bbe7604bc448ec6e115c6538e04af1c8275795ebb1c2b7b2830"
-  "12.3.1":
+  "12.3":
     "Linux":
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/12.3.rel1/binrel/arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi.tar.xz"
