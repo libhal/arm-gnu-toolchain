@@ -168,7 +168,7 @@ class ArmGnuToolchain(ConanFile):
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
         self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
 
-        libc_flag_map = {
+        newlib_flag_map = {
             "linux": ["--specs=linux.specs"],
             "nano": ["--specs=nano.specs"],
             "nosys": ["--specs=nosys.specs"],
@@ -185,12 +185,12 @@ class ArmGnuToolchain(ConanFile):
 
             self.output.info(f"C/C++ flags: {self._c_and_cxx_compiler_flags}")
 
-            libc = self.settings_target.compiler.get_safe("libc")
-            if libc and str(libc) in libc_flag_map:
-                libc_flags = libc_flag_map.get(str(libc))
+            newlib = self.settings_target.compiler.get_safe("newlib")
+            if newlib and str(newlib) in newlib_flag_map:
+                newlib_flags = newlib_flag_map.get(str(newlib))
                 self.conf_info.append(
-                    "tools.build:exelinkflags", libc_flags)
-                self.output.info(f"compiler.libc: {str(libc)}")
-                self.output.info(f"link flags: {libc_flags}")
+                    "tools.build:exelinkflags", newlib_flags)
+                self.output.info(f"compiler.newlib: {str(newlib)}")
+                self.output.info(f"link flags: {newlib_flags}")
         else:
             self.output.warning(f"target arch not present")
