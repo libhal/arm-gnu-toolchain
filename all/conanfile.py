@@ -188,9 +188,15 @@ class ArmGnuToolchain(ConanFile):
             newlib = self.settings_target.compiler.get_safe("newlib")
             if newlib and str(newlib) in newlib_flag_map:
                 newlib_flags = newlib_flag_map.get(str(newlib))
-                self.conf_info.append(
-                    "tools.build:exelinkflags", newlib_flags)
-                self.output.info(f"compiler.newlib: {str(newlib)}")
-                self.output.info(f"link flags: {newlib_flags}")
+            else:
+                # Default to using nano-nosys as it enables test packages
+                # without a newlib settings selected to still build easily
+                # without requiring additional tooling on their end.
+                newlib_flags = newlib_flag_map["nano_nosys"]
+
+            self.conf_info.append(
+                "tools.build:exelinkflags", newlib_flags)
+            self.output.info(f"compiler.newlib: {str(newlib)}")
+            self.output.info(f"link flags: {newlib_flags}")
         else:
             self.output.warning(f"target arch not present")
