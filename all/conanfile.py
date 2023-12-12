@@ -23,6 +23,8 @@ class ArmGnuToolchain(ConanFile):
     package_type = "application"
     build_policy = "missing"
     short_paths = True
+    options = {"custom_libc": [True, False]}
+    default_options = {"custom_libc": False}
 
     @property
     def license_url(self):
@@ -168,35 +170,21 @@ class ArmGnuToolchain(ConanFile):
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
         self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
 
-        newlib_flag_map = {
-            "linux": ["--specs=linux.specs"],
-            "nano": ["--specs=nano.specs"],
-            "nosys": ["--specs=nosys.specs"],
-            "nano_nosys": ["--specs=nano.specs", "--specs=nosys.specs"],
-        }
-
         if self._should_inject_compiler_flags:
-            self.conf_info.append("tools.build:cflags",
-                                  self._c_and_cxx_compiler_flags)
-            self.conf_info.append("tools.build:cxxflags",
-                                  self._c_and_cxx_compiler_flags)
-            self.conf_info.append("tools.build:exelinkflags",
-                                  self._c_and_cxx_compiler_flags)
+            common_flags = self._c_and_cxx_compiler_flags
+            self.conf_info.append("tools.build:cflags", common_flags)
+            self.conf_info.append("tools.build:cxxflags", common_flags)
+            self.conf_info.append("tools.build:exelinkflags", common_flags)
+            self.output.info(f"C/C++ compiler & link flags: {common_flags}")
 
-            self.output.info(f"C/C++ flags: {self._c_and_cxx_compiler_flags}")
-
-            newlib = self.settings_target.compiler.get_safe("newlib")
-            if newlib and str(newlib) in newlib_flag_map:
-                newlib_flags = newlib_flag_map.get(str(newlib))
+            if self.options.custom_libc:
+                self.output.info("Using custom libc implementation!")
             else:
-                # Default to using nano-nosys as it enables test packages
-                # without a newlib settings selected to still build easily
-                # without requiring additional tooling on their end.
-                newlib_flags = newlib_flag_map["nano_nosys"]
+                STUB_LIBC = ["--specs=nano.specs", "--specs=nosys.specs"]
+                self.conf_info.append("tools.build:exelinkflags", STUB_LIBC)
+                self.output.info(f"Using newlib libc: {STUB_LIBC}")
 
-            self.conf_info.append(
-                "tools.build:exelinkflags", newlib_flags)
-            self.output.info(f"compiler.newlib: {str(newlib)}")
-            self.output.info(f"link flags: {newlib_flags}")
-        else:
-            self.output.warning(f"target arch not present")
+    def package_id(self):
+        # This will ensure that the compiler doesn't try to rebuild/download
+        # itself when custom_libc is 'True'
+        del self.info.options.custom_libc

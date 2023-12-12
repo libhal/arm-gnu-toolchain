@@ -25,13 +25,6 @@ class Demo(ConanFile):
                 "This demo requires the compiler to be GCC, provided: " +
                 f"'{self.settings.compiler}'")
 
-        SUPPORTED_LIBC = ["nano", "nano_nosys"]
-        if str(self.settings.compiler.newlib) not in SUPPORTED_LIBC:
-            raise ConanInvalidConfiguration(
-                "newlib must be defined and one of these " +
-                f"{SUPPORTED_LIBC}, provided newlib: " +
-                f"'{self.settings.compiler.newlib}'")
-
     def build_requirements(self):
         self.tool_requires("cmake/3.27.1")
         self.tool_requires(f"arm-gnu-toolchain/{self._compiler_version}")
@@ -40,8 +33,7 @@ class Demo(ConanFile):
         pass
 
     def layout(self):
-        newlib = "build/" + str(self.settings.compiler.newlib)
-        cmake_layout(self, build_folder=newlib)
+        cmake_layout(self)
 
     def build(self):
         cmake = CMake(self)

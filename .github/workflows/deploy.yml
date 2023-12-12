@@ -42,8 +42,14 @@ jobs:
         run: conan create . --version=${{ inputs.version }}
 
       - name: 📦 Build Demos Conan Package
+        if: ${{ runner.os != 'Windows' }}
         working-directory: demo
-        run: conan build . -s compiler.version=${{ inputs.version }} -pr nano_nosys
+        run: VERBOSE=1 conan build . -pr profile -s compiler.version="${{ inputs.version }}"
+
+      - name: 📦 Build Demos Conan Package
+        if: ${{ runner.os == 'Windows' }}
+        working-directory: demo
+        run: conan build . -pr profile -s compiler.version="${{ inputs.version }}"
 
       - name: 📡 Sign into JFrog Artifactory
         if: ${{ github.ref == 'refs/heads/main' && runner.os != 'Windows' }}
