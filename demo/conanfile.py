@@ -27,7 +27,6 @@ class Demo(ConanFile):
 
     def build_requirements(self):
         self.tool_requires("cmake/3.27.1")
-        self.tool_requires(f"arm-gnu-toolchain/{self._compiler_version}")
 
     def requirements(self):
         pass
