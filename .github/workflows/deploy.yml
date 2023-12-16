@@ -47,12 +47,12 @@ jobs:
       - name: 📦 Build Demos Conan Package
         if: ${{ runner.os != 'Windows' }}
         working-directory: demo
-        run: VERBOSE=1 conan build . -pr profile -pr arm-gcc-${{ inputs.version }}
+        run: VERBOSE=1 conan build . -pr arm-gcc-${{ inputs.version }} -pr profile
 
       - name: 📦 Build Demos Conan Package
         if: ${{ runner.os == 'Windows' }}
         working-directory: demo
-        run: conan build . -pr profile -pr arm-gcc-${{ inputs.version }}
+        run: conan build . -pr arm-gcc-${{ inputs.version }} -pr profile
 
       - name: 📡 Sign into JFrog Artifactory
         if: ${{ github.ref == 'refs/heads/main' && runner.os != 'Windows' }}

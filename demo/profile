@@ -1,8 +1,4 @@
 [settings]
 build_type=MinSizeRel
-compiler=gcc
-compiler.cppstd=20
-compiler.version=12.2
-compiler.libcxx=libstdc++
 arch=cortex-m4f
 os=baremetal
