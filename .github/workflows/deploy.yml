@@ -24,9 +24,9 @@ jobs:
       - name: 📥 Install CMake & Conan
         run: pip3 install conan==2.0.13
 
-      - name: 📡 Add `libhal-trunk` conan remote
+      - name: 📡 Add `libhal` conan remote
         run: |
-          conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
+          conan remote add libhal https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
       - name: 📡 Create and setup default profile
         run: conan profile detect --force
