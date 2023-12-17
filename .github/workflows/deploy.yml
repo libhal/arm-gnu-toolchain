@@ -66,7 +66,7 @@ jobs:
         env:
           PASSWORD: ${{ secrets.JFROG_LIBHAL_TRUNK_ID_TOKEN }}
           JFROG_USER: ${{ secrets.JFROG_LIBHAL_TRUNK_ID_TOKEN_USER }}
-        run: conan remote login -p $env:$PASSWORD libhal $env:$JFROG_USER
+        run: conan remote login -p $env:PASSWORD libhal $env:JFROG_USER
 
       - name: 🆙 Upload package to `libhal` repo
         if: ${{ github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-22.04' }}
