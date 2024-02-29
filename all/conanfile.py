@@ -18,13 +18,11 @@ class ArmGnuToolchain(ConanFile):
               "cortex-m0", "cortex-m0+", "cortex-m1", "cortex-m3", "cortex-m4",
               "cortex-m4f", "cortex-m7", "cortex-m23", "cortex-m55",
               "cortex-m35p", "cortex-m33")
-    settings = "os", "arch", 'compiler', 'build_type'
+    settings = "os", "arch", "compiler", "build_type"
     exports_sources = "toolchain.cmake"
     package_type = "application"
     build_policy = "missing"
     short_paths = True
-    options = {"custom_libc": [True, False]}
-    default_options = {"custom_libc": False}
 
     @property
     def license_url(self):
@@ -177,14 +175,5 @@ class ArmGnuToolchain(ConanFile):
             self.conf_info.append("tools.build:exelinkflags", common_flags)
             self.output.info(f"C/C++ compiler & link flags: {common_flags}")
 
-            if self.options.custom_libc:
-                self.output.info("Using custom libc implementation!")
-            else:
-                STUB_LIBC = ["--specs=nano.specs", "--specs=nosys.specs"]
-                self.conf_info.append("tools.build:exelinkflags", STUB_LIBC)
-                self.output.info(f"Using newlib libc: {STUB_LIBC}")
-
     def package_id(self):
-        # This will ensure that the compiler doesn't try to rebuild/download
-        # itself when custom_libc is 'True'
-        del self.info.options.custom_libc
+        pass

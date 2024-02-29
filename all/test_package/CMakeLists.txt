@@ -4,11 +4,6 @@ set(CMAKE_TOOLCHAIN_FILE ../toolchain.cmake)
 
 project(test_package LANGUAGES CXX)
 
-add_executable(${PROJECT_NAME} main.cpp)
-target_compile_options(${PROJECT_NAME} PRIVATE
-  -mcpu=cortex-m0
-  --specs=nosys.specs)
-
-target_link_options(${PROJECT_NAME} PRIVATE
-  -mcpu=cortex-m0
-  --specs=nosys.specs)
+add_executable(test_package main.cpp)
+target_compile_options(test_package PRIVATE -mcpu=cortex-m0)
+target_link_options(test_package PRIVATE -mcpu=cortex-m0)
