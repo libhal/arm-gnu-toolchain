@@ -29,11 +29,11 @@ class ArmGnuToolchain(ConanFile):
         # License URL found from the "EULA" button on the
         # https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
         # web page.
-        if self.version == "11.3.0":
+        if self.version == "11.3":
             return "https://developer.arm.com/GetEula?Id=ff19df33-da82-491a-ab50-c605d4589a26"
-        if self.version == "12.2.1":
+        if self.version == "12.2":
             return "https://developer.arm.com/GetEula?Id=2821586b-44d0-4e75-a06d-4279cd97eaae"
-        if self.version == "12.3.1":
+        if self.version == "12.3":
             return "https://developer.arm.com/GetEula?Id=aa3d692d-bc99-4c8c-bce2-588181ddde13"
         else:
             # This should only happen if the toolchain is packaged with its
