@@ -74,7 +74,7 @@ sources:
     "Windows":
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
-        sha256": "51d933f00578aa28016c5e3c84f94403274ea7915539f8e56c13e2196437d18f"
+        sha256: "51d933f00578aa28016c5e3c84f94403274ea7915539f8e56c13e2196437d18f"
   "13.3":
     "Linux":
       "x86_64":
@@ -93,7 +93,7 @@ sources:
     "Windows":
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi.zip"
-        sha256": "e46fda043c0ce83582bc8db4b3ef85f77f4beb7333344c2f4193c17e1167a095"
+        sha256: "e46fda043c0ce83582bc8db4b3ef85f77f4beb7333344c2f4193c17e1167a095"
   "14.2":
     "Linux":
       "x86_64":
@@ -112,4 +112,4 @@ sources:
     "Windows":
       "x86_64":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
-        sha256": "6facb152ce431ba9a4517e939ea46f057380f8f1e56b62e8712b3f3b87d994e1"
+        sha256: "6facb152ce431ba9a4517e939ea46f057380f8f1e56b62e8712b3f3b87d994e1"
