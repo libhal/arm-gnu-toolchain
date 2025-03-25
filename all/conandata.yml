@@ -62,18 +62,18 @@ sources:
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz"
         sha256: "6cd1bbc1d9ae57312bcd169ae283153a9572bd6a8e4eeae2fedfbc33b115fdbb"
       "armv8":
-        url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-aarch64-aarch64-none-elf.tar.xz"
+        url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-aarch64-arm-none-eabi.tar.xz"
         sha256: "f3871c0d91a7375834eb43eb758f4df6d8dadf20ad9deca2eb569d5599d98e89"
-    "MacOS":
+    "Macos":
       x86_64:
-        url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-darwin-x86_64-aarch64-none-elf.tar.xz"
+        url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
         sha256: "8473b67285af0f883004e5364c835b43af8d83ed148f493dd21c4c1067b1a0a8"
       armv8:
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-darwin-arm64-arm-none-eabi.tar.xz"
         sha256: "39c44f8af42695b7b871df42e346c09fee670ea8dfc11f17083e296ea2b0d279"
     "Windows":
       "x86_64":
-        url: "https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
+        url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
         sha256": "51d933f00578aa28016c5e3c84f94403274ea7915539f8e56c13e2196437d18f"
   "13.3":
     "Linux":
@@ -83,7 +83,7 @@ sources:
       "armv8":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-aarch64-arm-none-eabi.tar.xz"
         sha256: "c8824bffd057afce2259f7618254e840715f33523a3d4e4294f471208f976764"
-    "MacOS":
+    "Macos":
       x86_64:
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
         sha256: "1ab00742d1ed0926e6f227df39d767f8efab46f5250505c29cb81f548222d794"
@@ -102,7 +102,7 @@ sources:
       "armv8":
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz"
         sha256: "87330bab085dd8749d4ed0ad633674b9dc48b237b61069e3b481abd364d0a684"
-    "MacOS":
+    "Macos":
       x86_64:
         url: "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
         sha256: "2d9e717dd4f7751d18936ae1365d25916534105ebcb7583039eff1092b824505"
