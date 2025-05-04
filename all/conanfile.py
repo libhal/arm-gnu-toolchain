@@ -162,7 +162,7 @@ class ArmGnuToolchain(ConanFile):
         self.conf_info.define("tools.build:compiler_executables", {
             "c": "arm-none-eabi-gcc",
             "cpp": "arm-none-eabi-g++",
-            "asm": "arm-none-eabi-as",
+            "asm": "arm-none-eabi-gcc",
         })
 
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
