@@ -5,3 +5,9 @@ versions:
     folder: "all"
   "12.3":
     folder: "all"
+  "13.2":
+    folder: "all"
+  "13.3":
+    folder: "all"
+  "14.2":
+    folder: "all"
