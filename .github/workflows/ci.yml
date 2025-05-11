@@ -1,0 +1,19 @@
+name: ✅ CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci_11_3:
+    uses: ./.github/workflows/11.3.yml
+    secrets: inherit
+  ci_12_2:
+    uses: ./.github/workflows/12.2.yml
+    secrets: inherit
+  ci_12_3:
+    uses: ./.github/workflows/12.3.yml
+    secrets: inherit
