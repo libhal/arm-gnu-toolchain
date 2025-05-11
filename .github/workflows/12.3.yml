@@ -2,10 +2,7 @@ name: 🚀 12.3 Deploy
 
 on:
   workflow_dispatch:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
 
 jobs:
   deploy:
