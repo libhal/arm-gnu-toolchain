@@ -117,10 +117,17 @@ class ArmGnuToolchain(ConanFile):
     def build(self):
         if self.license_url:
             download(self, self.license_url, "LICENSE", verify=False)
+        OS = str(self._settings_build.os)
+        VERSION = self.version
+        ARCH = str(self._settings_build.arch)
 
+        # For some reason ARM decided to make this version have a different
+        # folder layout compared to others so we need a special case for this.
+        strip_root = not (VERSION == "14.2" and OS ==
+                          "Windows" and ARCH == "x86_64")
         get(self,
             **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)],
-            destination=self.build_folder, strip_root=True)
+            destination=self.build_folder, strip_root=strip_root)
 
     def package(self):
         destination = os.path.join(self.package_folder, "bin")
