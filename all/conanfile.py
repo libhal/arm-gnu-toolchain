@@ -1,3 +1,4 @@
+from pathlib import Path
 from conan import ConanFile
 from conan.tools.files import get, copy, download
 from conan.errors import ConanInvalidConfiguration
@@ -23,6 +24,13 @@ class ArmGnuToolchain(ConanFile):
     package_type = "application"
     build_policy = "missing"
     short_paths = True
+    options = {
+        "local_path": ["ANY"],
+    }
+
+    default_options = {
+        "local_path": "unspecified",
+    }
 
     @property
     def license_url(self):
@@ -84,6 +92,15 @@ class ArmGnuToolchain(ConanFile):
             return self._arch_map[str(self.settings_target.get_safe('arch'))]
         return []
 
+    @property
+    def _local_path_option_is_valid(self):
+        LOCAL_PATH = str(self.options.local_path)
+        return LOCAL_PATH and LOCAL_PATH != "unspecified"
+
+    @property
+    def _local_path_file(self):
+        return os.path.join(self.package_folder, "local_path.txt")
+
     def validate(self):
         supported_build_operating_systems = ["Linux", "Macos", "Windows"]
         if not self._settings_build.os in supported_build_operating_systems:
@@ -114,7 +131,18 @@ class ArmGnuToolchain(ConanFile):
     def source(self):
         pass
 
-    def build(self):
+    def build_local(self):
+        LOCAL_PATH = str(self.options.local_path)
+        self.output.info(f"self.options.local_path={LOCAL_PATH}")
+        LOCAL_PATH_FILE = os.path.join(self.build_folder, "local_path.txt")
+        # We write the local_path.txt file to the build directory which will be
+        # relocated to the package directory. This file's existence will
+        # determine if a local path should be used or to use the downloaded
+        # files.
+        with open(LOCAL_PATH_FILE, "a") as f:
+            f.write(LOCAL_PATH)
+
+    def build_remote(self):
         if self.license_url:
             download(self, self.license_url, "LICENSE", verify=False)
         OS = str(self._settings_build.os)
@@ -129,31 +157,80 @@ class ArmGnuToolchain(ConanFile):
             **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)],
             destination=self.build_folder, strip_root=strip_root)
 
-    def package(self):
-        destination = os.path.join(self.package_folder, "bin")
+    def build(self):
+        if self._local_path_option_is_valid:
+            self.build_local()
+        else:
+            self.build_remote()
 
+    def package_local_path(self):
+        copy(self, pattern="local_path.txt", src=self.build_folder,
+             dst=self.package_folder, keep_path=True)
+
+    def package_remote_path(self):
+        DESTINATION = os.path.join(self.package_folder, "bin")
+        LICENSE_DIR = os.path.join(self.package_folder, "licenses/")
         copy(self, pattern="arm-none-eabi/*", src=self.build_folder,
-             dst=destination, keep_path=True)
+             dst=DESTINATION, keep_path=True)
         copy(self, pattern="bin/*", src=self.build_folder,
-             dst=destination, keep_path=True)
+             dst=DESTINATION, keep_path=True)
         copy(self, pattern="include/*", src=self.build_folder,
-             dst=destination, keep_path=True)
+             dst=DESTINATION, keep_path=True)
         copy(self, pattern="lib/*", src=self.build_folder,
-             dst=destination, keep_path=True)
+             dst=DESTINATION, keep_path=True)
         copy(self, pattern="libexec/*", src=self.build_folder,
-             dst=destination, keep_path=True)
+             dst=DESTINATION, keep_path=True)
         copy(self, pattern="share/*", src=self.build_folder,
-             dst=destination, keep_path=True)
-
-        license_dir = os.path.join(self.package_folder, "licenses/")
+             dst=DESTINATION, keep_path=True)
         copy(self, pattern="LICENSE*", src=self.build_folder,
-             dst=license_dir, keep_path=True)
+             dst=LICENSE_DIR, keep_path=True)
 
-        resource_dir = os.path.join(self.package_folder, "res/")
+    def package(self):
+        RESOURCE_DIR = os.path.join(self.package_folder, "res/")
         copy(self, pattern="toolchain.cmake", src=self.build_folder,
-             dst=resource_dir, keep_path=True)
+             dst=RESOURCE_DIR, keep_path=True)
+        if self._local_path_option_is_valid:
+            self.package_local_path()
+        else:
+            self.package_remote_path()
 
-    def package_info(self):
+    def setup_local_package_info(self):
+        self.output.info("Using binaries found within local_path.txt")
+
+        self.cpp_info.includedirs = []
+        LOCAL_PATH_FILE = Path(os.path.join(
+            self.package_folder, "local_path.txt"))
+        LOCAL_PATH = LOCAL_PATH_FILE.read_text()
+        bin_folder = os.path.join(LOCAL_PATH, "bin/")
+        self.cpp_info.bindirs = [bin_folder]
+        self.buildenv_info.append_path("PATH", bin_folder)
+        self.output.info(f"self.bin_folder = {bin_folder}")
+
+        self.conf_info.define(
+            "tools.cmake.cmaketoolchain:system_name", "Generic")
+        self.conf_info.define(
+            "tools.cmake.cmaketoolchain:system_processor", "ARM")
+
+        self.conf_info.define("tools.build.cross_building:can_run", False)
+        self.conf_info.define("tools.build:compiler_executables", {
+            "c": "arm-none-eabi-gcc",
+            "cpp": "arm-none-eabi-g++",
+            "asm": "arm-none-eabi-gcc",
+        })
+
+        f = os.path.join(self.package_folder, "res/toolchain.cmake")
+        self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
+
+        if self._should_inject_compiler_flags:
+            common_flags = self._c_and_cxx_compiler_flags
+            self.conf_info.append("tools.build:cflags", common_flags)
+            self.conf_info.append("tools.build:cxxflags", common_flags)
+            self.conf_info.append("tools.build:exelinkflags", common_flags)
+            self.output.info(f"C/C++ compiler & link flags: {common_flags}")
+
+    def setup_remote_package_info(self):
+        self.output.info("Using remote downloaded binaries")
+
         self.cpp_info.includedirs = []
 
         bin_folder = os.path.join(self.package_folder, "bin/bin")
@@ -182,5 +259,11 @@ class ArmGnuToolchain(ConanFile):
             self.conf_info.append("tools.build:exelinkflags", common_flags)
             self.output.info(f"C/C++ compiler & link flags: {common_flags}")
 
+    def package_info(self):
+        if os.path.exists(os.path.join(self.package_folder, "local_path.txt")):
+            self.setup_local_package_info()
+        else:
+            self.setup_remote_package_info()
+
     def package_id(self):
-        pass
+        del self.info.options.local_path
