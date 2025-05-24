@@ -8,7 +8,7 @@ compiler.version=14.2
 arm-gnu-toolchain/14.2
 
 [conf]
-tools.build:cflags=["-flto", "-ffat-lto-objects"]
-tools.build:cxxflags=["-flto", "-ffat-lto-objects"]
+tools.build:cflags=["-flto", "-ffat-lto-objects", "-ffunction-sections", "-fdata-sections"]
+tools.build:cxxflags=["-flto", "-ffat-lto-objects", "-ffunction-sections", "-fdata-sections"]
 tools.build:exelinkflags=["-flto"]
 tools.build:sharedlinkflags=["-flto"]
