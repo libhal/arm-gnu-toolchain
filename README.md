@@ -1,37 +1,128 @@
 # ARM GNU Toolchain Repo
 
-Here you can find conan packages for the ARM GNU Toolchain packages used by
-libhal project.
+A conan tool package for the ARM GNU Toolchain (`arm-none-eabi-gcc`). By adding
+this tool package to your conan build profile, your project will be cross compiled using this toolchain.
+
+Supported version:
+
+- GCC 11.3
+- GCC 12.2
+- GCC 12.3
+- GCC 13.2
+- GCC 13.3
+- GCC 14.2
+
+All binaries are downloaded from the official
+[ARM GNU Toolchain Download Page](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
+
+## 🚀 Quick Start
+
+For this tool package to work correctly, the toolchain **MUST** be a dependency
+within your build profile like so:
+
+```jinja2
+[settings]
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=11.3
+
+[tool_requires]
+arm-gnu-toolchain/11.3
+```
+
+By adding it to your profile, every dependency of your application will use this
+toolchain for its compilation. The tool package should NOT be directly added to
+an application's `conanfile.py` as this will not propagate correctly and will
+likely result in build failures.
+
+## 🧾 Using the pre-made profiles
+
+This repo provides are pre-made profiles within the `conan/profiles/`
+directory. The profiles can be installed into your local conan cache directory
+via this command:
+
+```bash
+conan config install -sf conan/profiles/v1 -tf profiles https://github.com/libhal/arm-gnu-toolchain.git
+```
+
+To perform this with a locally cloned repo run this command at the root of the
+repo:
+
+```bash
+conan config install -sf conan/profiles/v1 -tf profiles .
+```
+
+Profiles are versioned in directories `v1/`, `v2/`, `v3/`, etc. Currently there
+are no sub versions. The version increment is not well defined as of yet, but
+should be incremented if the behavior of the profiles changes significantly
+enough to break current applications.
+
+The pre-made profiles come with decision decision which may not align with your
+application.
+
+### **Design Decisions:** LTO & FAT LTO
+
+The `v1` profiles add the following to enable LTO and FAT LTO.
+
+```plaintext
+[conf]
+tools.build:cflags=["-flto", "-ffat-lto-objects"]
+tools.build:cxxflags=["-flto", "-ffat-lto-objects"]
+tools.build:exelinkflags=["-flto"]
+tools.build:sharedlinkflags=["-flto"]
+```
+
+LTO stands for Link Time Optimization. Enabling it changes the representation
+of the intermediate files (object files and archive files) to a form that that
+can better be optimized by the linker. This tends to improve performance and
+reduce binary sizes. Intermediate files generated with LTO only work with
+linkers that support LTO and have LTO enabled. FAT LTO provides both the LTO
+and original compiled representation which enabling linkers with and without
+linker support to link correctly.
+
+The cost is that the intermediate files get larger and build times may get
+longer. It is likely that targets using this compiler will have low resources
+and could benefit from the added optimization, thus all profiles have LTO
+enabled.
+
+### **Design Decisions:** `libstdc++11`
+
+The `v1` profiles all use `libstdc++11` as this is the latest GCC C++ ABI.
+There is not much value in the older ABI and thus we use the latest. There is
+currently no plan for what the profiles will become if a new C++ ABI is
+introduced.
 
 ## 📦 Building & Installing the Tool Package
 
-This conan project is a tool package. Meaning it provides binaries for tools
-that the build system can rely on such as the compiler itself. This package
-DOES (currently) build GCC from scratch for to cross compile for an ARM target.
-Instead, this tool package simply downloads the ARM compiler from the ARM
-website.
+When you create the package it will download the compiler from the official website and store it within your local conan package cache.
 
 ```bash
 conan create . --version <insert version>
 ```
 
-Install GCC 11.3 compiler into local conan cache:
-
-```bash
-conan create . --version 11.3
-```
-
-Install GCC 12.2 compiler into local conan cache:
-
-```bash
-conan create . --version 12.2
-```
-
-Install GCC 12.3 compiler into local conan cache:
+For example, to create/install GCC 12.3
 
 ```bash
 conan create . --version 12.3
 ```
+
+## Using Non-Official ARM Toolchain Builds
+
+Are you building the toolchain locally? Are you using prebuilt binaries from
+some other source? If so, use the `local_path` option to set the path to
+the local toolchain root. This will replace the download step completely and
+will assume that all of the necessary files are within the `local_path`
+directory.
+
+To create a GCC version 14.2 pointed to `/path/to/arm-gnu-toolchain-root/`
+
+```bash
+conan create . --version 14.2 -o "*:local_path=/path/to/arm-gnu-toolchain-root/
+```
+
+Make sure the toolchain and the version of the package match otherwise, the
+compiler package may not work correctly.
 
 ## ✨ Adding New Versions of GCC
 
