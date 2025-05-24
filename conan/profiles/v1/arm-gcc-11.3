@@ -6,3 +6,9 @@ compiler.version=11.3
 
 [tool_requires]
 arm-gnu-toolchain/11.3
+
+[conf]
+tools.build:cflags=["-flto", "-ffat-lto-objects"]
+tools.build:cxxflags=["-flto", "-ffat-lto-objects"]
+tools.build:exelinkflags=["-flto"]
+tools.build:sharedlinkflags=["-flto"]
