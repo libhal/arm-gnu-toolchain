@@ -42,7 +42,13 @@ jobs:
 
       - name: 📦 Create Conan Package
         working-directory: all
+        if: ${{ runner.os != 'Windows' }}
         run: VERBOSE=1 conan create . --version=${{ inputs.version }}
+
+      - name: 📦 Create Conan Package
+        working-directory: all
+        if: ${{ runner.os == 'Windows' }}
+        run: conan create . --version=${{ inputs.version }}
 
       - name: 📦 Build Demos Conan Package
         if: ${{ runner.os != 'Windows' }}
