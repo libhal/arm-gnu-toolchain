@@ -228,7 +228,7 @@ class ArmGnuToolchain(ConanFile):
             exelinkflags.append("--specs=nosys.specs")
 
         if self.options.gc_sections:
-            exelinkflags.append("-gc-sections")
+            exelinkflags.append("--gc-sections")
 
         ARCH_MAP = {
             "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
