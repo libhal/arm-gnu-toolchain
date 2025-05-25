@@ -6,9 +6,3 @@ compiler.version=13.3
 
 [tool_requires]
 arm-gnu-toolchain/13.3
-
-[conf]
-tools.build:cflags=["-flto", "-ffat-lto-objects", "-ffunction-sections", "-fdata-sections"]
-tools.build:cxxflags=["-flto", "-ffat-lto-objects", "-ffunction-sections", "-fdata-sections"]
-tools.build:exelinkflags=["-flto"]
-tools.build:sharedlinkflags=["-flto"]
