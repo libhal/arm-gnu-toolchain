@@ -209,7 +209,7 @@ flag `-fdata-sections` to C and CXX arguments.
 ### `gc_sections` (Default: `True`)
 
 This option can be `True` or `False` and when set to `True` will inject the
-flag `-gc_sections` to the linker arguments.
+flag `--gc_sections` to the linker arguments.
 
 ## ✨ Adding New Versions of GCC
 
