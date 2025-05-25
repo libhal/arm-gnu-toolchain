@@ -27,7 +27,6 @@ class ArmGnuToolchain(ConanFile):
     options = {
         "local_path": ["ANY"],
         "default_arch": [True, False],
-        "default_specs": [True, False],
         "lto": [True,  False],
         "fat_lto": [True,  False],
         "function_sections": [True,  False],
@@ -38,7 +37,6 @@ class ArmGnuToolchain(ConanFile):
     default_options = {
         "local_path": "",
         "default_arch": True,
-        "default_specs": True,
         "lto": True,
         "fat_lto": True,
         "function_sections": True,
@@ -49,7 +47,6 @@ class ArmGnuToolchain(ConanFile):
     options_description = {
         "local_path": "Provide a path to your local ARM GNU Toolchain. If not set, the official toolchain is downloaded from the ARM website.",
         "default_arch": "Automatically inject architecture appropriate the -mcpu and -mfloat-abi arguments into compilation flags.",
-        "default_specs": "Inject --specs=nano.specs & --specs=nosys.specs into the link flags which allows programs with no specs specified to compile like test packages.",
         "lto": "Enable LTO support in binaries and intermediate files (.o and .a files)",
         "fat_lto": "Enable linkers without LTO support to still build with LTO enabled binaries. This adds both LTO information and compiled code into the object and archive files.",
         "function_sections": "Enable -ffunction-sections which splits each function into their own subsection allowing link time garbage collection of the sections.",
@@ -223,10 +220,6 @@ class ArmGnuToolchain(ConanFile):
             c_flags.append("-fdata-sections")
             cxx_flags.append("-fdata-sections")
 
-        if self.options.default_specs:
-            exelinkflags.append("--specs=nano.specs")
-            exelinkflags.append("--specs=nosys.specs")
-
         if self.options.gc_sections:
             exelinkflags.append("-Wl,--gc-sections")
 
@@ -275,7 +268,6 @@ class ArmGnuToolchain(ConanFile):
     def package_id(self):
         del self.info.options.local_path
         del self.info.options.default_arch
-        del self.info.options.default_specs
         del self.info.options.lto
         del self.info.options.fat_lto
         del self.info.options.function_sections

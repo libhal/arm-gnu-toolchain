@@ -176,16 +176,6 @@ target profile.
 For `cortex-m4`, the flags would be `-mcpu=cortex-m4` and `-mfloat-abi=soft`.
 For `cortex-m4f`, the flags would be `-mcpu=cortex-m4` and `-mfloat-abi=hard`.
 
-### `default_specs` (Default: `True`)
-
-This option can be `True` or `False` and when set to `True` will inject the
-`--specs=nano.specs` `--specs=nosys.specs` into the linker flags. With these
-two newlib C specifications most C and C++ projects should build without
-linking errors. `--specs=nosys.specs` defines stubs for the low level system
-libc APIs like `_write`, `_read`, `_sbrk()`, and `_get_pid()`.
-`--specs=nano.specs` provides base implementations of things such as `printf`
-and `malloc`.
-
 ### `lto` (Default: `True`)
 
 This option can be `True` or `False` and when set to `True` will inject the
