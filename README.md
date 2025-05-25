@@ -1,7 +1,8 @@
 # ARM GNU Toolchain Repo
 
 A conan tool package for the ARM GNU Toolchain (`arm-none-eabi-gcc`). By adding
-this tool package to your conan build profile, your project will be cross compiled using this toolchain.
+this tool package to your conan build profile, your project will be cross
+compiled using this toolchain.
 
 Supported version:
 
@@ -12,29 +13,100 @@ Supported version:
 - GCC 13.3
 - GCC 14.2
 
+Supported Architectures:
+
+- cortex-m0
+- cortex-m0plus
+- cortex-m1
+- cortex-m3
+- cortex-m4
+- cortex-m4f
+- cortex-m7
+- cortex-m7f
+- cortex-m7d
+- cortex-m23
+- cortex-m33
+- cortex-m33f
+- cortex-m33p
+- cortex-m35pf
+- cortex-m55
+- cortex-m85
+
+Missing Architectures:
+
+- cortex-m55h
+- cortex-m55f
+- cortex-m55d
+- cortex-m85h
+- cortex-m85f
+- cortex-m85d
+
+> [!NOTE]
+> The architecture names may have a trailing characters which indicates if the
+> architecture has access to a floating point unit.
+>
+> - `f` indicates that the processor has a single precision (32-bit) hard
+> floating point unit available.
+> - `h` indicates that the processor has a half precision (16-bit) hard
+> floating point unit available.
+> - `d` indicates that the processor has a double precision (64-bit) hard
+> floating point unit available.
+
 All binaries are downloaded from the official
 [ARM GNU Toolchain Download Page](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
 
 ## 🚀 Quick Start
 
-For this tool package to work correctly, the toolchain **MUST** be a dependency
-within your build profile like so:
+To use the ARM GNU Toolchain for your application, you should install the
+pre-made compiler profiles to your local `conan2` cache like so:
+
+```bash
+conan config install -sf conan/profiles/v1 -tf profiles https://github.com/libhal/arm-gnu-toolchain.git
+```
+
+This will provide you profiles that you can access via conan using the argument
+`-pr arm-gcc-<gcc-version>`. For example `-pr arm-gcc-12.3`. These profiles
+only include the compiler information. You will need a "target" profile in
+order to actually build something. The target profile must include the
+`os=baremetal`, `arch` set to a valid architecture. `build_type` is optional
+
+Add the following contents to a profile named `target_profile` (feel free to
+rename to whatever you'd like):
+
+```jinja2
+[settings]
+build_type=MinSizeRel
+arch=cortex-m4f
+os=baremetal
+```
+
+Now we can build your application using ARM GCC 12.3 for the Cortex M4F
+processor, with build type set to MinSizeRel, by executing the following
+command:
+
+```bash
+conan build path/to/application -pr arm-gcc-12.3 -pr ./target_profile
+```
+
+## 🔗 Adding this as a dependency to your project
+
+For this tool package to work correctly, the toolchain **MUST** be added as a dependency using the `tool_requires` command within at least one profile in the build. Like the following:
 
 ```jinja2
 [settings]
 compiler=gcc
 compiler.cppstd=23
 compiler.libcxx=libstdc++11
-compiler.version=11.3
+compiler.version=12.3
 
 [tool_requires]
-arm-gnu-toolchain/11.3
+arm-gnu-toolchain/12.3
 ```
 
-By adding it to your profile, every dependency of your application will use this
-toolchain for its compilation. The tool package should NOT be directly added to
-an application's `conanfile.py` as this will not propagate correctly and will
-likely result in build failures.
+By adding `arm-gnu-toolchain/12.3` to your profile, every dependency of your
+application will use this toolchain for its compilation. The tool package
+should NOT be directly added to an application's `conanfile.py` as this will
+not propagate correctly and will likely result in build failures.
 
 ## 🧾 Using the pre-made profiles
 
@@ -58,40 +130,7 @@ are no sub versions. The version increment is not well defined as of yet, but
 should be incremented if the behavior of the profiles changes significantly
 enough to break current applications.
 
-The pre-made profiles come with decision decision which may not align with your
-application.
-
-### **Design Decisions:** LTO & FAT LTO
-
-The `v1` profiles add the following to enable LTO and FAT LTO.
-
-```plaintext
-[conf]
-tools.build:cflags=["-flto", "-ffat-lto-objects"]
-tools.build:cxxflags=["-flto", "-ffat-lto-objects"]
-tools.build:exelinkflags=["-flto"]
-tools.build:sharedlinkflags=["-flto"]
-```
-
-LTO stands for Link Time Optimization. Enabling it changes the representation
-of the intermediate files (object files and archive files) to a form that that
-can better be optimized by the linker. This tends to improve performance and
-reduce binary sizes. Intermediate files generated with LTO only work with
-linkers that support LTO and have LTO enabled. FAT LTO provides both the LTO
-and original compiled representation which enabling linkers with and without
-linker support to link correctly.
-
-The cost is that the intermediate files get larger and build times may get
-longer. It is likely that targets using this compiler will have low resources
-and could benefit from the added optimization, thus all profiles have LTO
-enabled.
-
-### **Design Decisions:** `libstdc++11`
-
-The `v1` profiles all use `libstdc++11` as this is the latest GCC C++ ABI.
-There is not much value in the older ABI and thus we use the latest. There is
-currently no plan for what the profiles will become if a new C++ ABI is
-introduced.
+All profiles use `libstdc++11` as this is the latest GCC C++ ABI.
 
 ## 📦 Building & Installing the Tool Package
 
@@ -107,22 +146,70 @@ For example, to create/install GCC 12.3
 conan create . --version 12.3
 ```
 
-## Using Non-Official ARM Toolchain Builds
+## 🎛️ Options
 
-Are you building the toolchain locally? Are you using prebuilt binaries from
-some other source? If so, use the `local_path` option to set the path to
-the local toolchain root. This will replace the download step completely and
-will assume that all of the necessary files are within the `local_path`
-directory.
+### `local_path` (Default: "")
 
-To create a GCC version 14.2 pointed to `/path/to/arm-gnu-toolchain-root/`
+This option accepts a string. If the string is NOT empty the `conanfile.py`
+will use this path as the location of the ARM GNU Toolchain rather than
+downloading the official one. This is beneficial if you are you building the
+toolchain locally or you using prebuilt binaries from some other source?
+
+To create an ARM GCC 14.2 with toolchain directory pointed to
+`/path/to/arm-gnu-toolchain-root/`, invoke the following command:
 
 ```bash
 conan create . --version 14.2 -o "*:local_path=/path/to/arm-gnu-toolchain-root/
 ```
 
-Make sure the toolchain and the version of the package match otherwise, the
-compiler package may not work correctly.
+Replace `/path/to/arm-gnu-toolchain-root/` with the actual path to your
+toolchain.
+
+The toolchain directory and GCC version in the conan build MUST match, otherwise the compiler package may not work properly.
+
+### `default_arch` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+appropriate `-mcpu` and `-mfloat-abi` for the `arch` defined in your build
+target profile.
+
+For `cortex-m4`, the flags would be `-mcpu=cortex-m4` and `-mfloat-abi=soft`.
+For `cortex-m4f`, the flags would be `-mcpu=cortex-m4` and `-mfloat-abi=hard`.
+
+### `default_specs` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+`--specs=nano.specs` `--specs=nosys.specs` into the linker flags. With these
+two newlib C specifications most C and C++ projects should build without
+linking errors. `--specs=nosys.specs` defines stubs for the low level system
+libc APIs like `_write`, `_read`, `_sbrk()`, and `_get_pid()`.
+`--specs=nano.specs` provides base implementations of things such as `printf`
+and `malloc`.
+
+### `lto` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+flag `-flto` to C, CXX, and link arguments.
+
+### `fat-lto` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+flag `-flto` to C, CXX, and link arguments.
+
+### `function_sections` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+flag `-ffunction-sections` to C and CXX arguments.
+
+### `data_sections` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+flag `-fdata-sections` to C and CXX arguments.
+
+### `gc_sections` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+flag `-gc_sections` to the linker arguments.
 
 ## ✨ Adding New Versions of GCC
 
