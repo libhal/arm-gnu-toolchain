@@ -1,6 +1,0 @@
-[settings]
-arch=cortex-m4
-compiler=gcc
-compiler.cppstd=20
-compiler.libcxx=libstdc++
-os=baremetal
