@@ -5,7 +5,7 @@ from conan.errors import ConanInvalidConfiguration
 import os
 
 
-required_conan_version = ">=1.60.2"
+required_conan_version = ">=2.0.0"
 
 
 class ArmGnuToolchain(ConanFile):
@@ -26,80 +26,42 @@ class ArmGnuToolchain(ConanFile):
     short_paths = True
     options = {
         "local_path": ["ANY"],
+        "default_arch": [True, False],
+        "default_specs": [True, False],
+        "lto": [True,  False],
+        "fat_lto": [True,  False],
+        "function_sections": [True,  False],
+        "data_sections": [True,  False],
+        "gc_sections": [True, False],
     }
 
     default_options = {
-        "local_path": "unspecified",
+        "local_path": "",
+        "default_arch": True,
+        "default_specs": True,
+        "lto": True,
+        "fat_lto": True,
+        "function_sections": True,
+        "data_sections": True,
+        "gc_sections": True,
     }
 
-    @property
-    def license_url(self):
-        # License URL found from the "EULA" button on the
-        # https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
-        # web page.
-        if self.version == "11.3":
-            return "https://developer.arm.com/GetEula?Id=ff19df33-da82-491a-ab50-c605d4589a26"
-        if self.version == "12.2":
-            return "https://developer.arm.com/GetEula?Id=2821586b-44d0-4e75-a06d-4279cd97eaae"
-        if self.version == "12.3":
-            return "https://developer.arm.com/GetEula?Id=aa3d692d-bc99-4c8c-bce2-588181ddde13"
-        else:
-            # This should only happen if the toolchain is packaged with its
-            # license file.
-            return None
+    options_description = {
+        "local_path": "Provide a path to your local ARM GNU Toolchain. If not set, the official toolchain is downloaded from the ARM website.",
+        "default_arch": "Automatically inject architecture appropriate the -mcpu and -mfloat-abi arguments into compilation flags.",
+        "default_specs": "Inject --specs=nano.specs & --specs=nosys.specs into the link flags which allows programs with no specs specified to compile like test packages.",
+        "lto": "Enable LTO support in binaries and intermediate files (.o and .a files)",
+        "fat_lto": "Enable linkers without LTO support to still build with LTO enabled binaries. This adds both LTO information and compiled code into the object and archive files.",
+        "function_sections": "Enable -ffunction-sections which splits each function into their own subsection allowing link time garbage collection of the sections.",
+        "data_sections": "Enable -fdata-sections which splits each statically defined block memory into their own subsection allowing link time garbage collection of the sections.",
+        "gc_sections": "Enable garbage collection at link stage. Only useful if at least function_sections and data_sections is enabled."
+    }
+
+    LOCAL_PATH_TXT = "local_path.txt"
 
     @property
     def _settings_build(self):
         return getattr(self, "settings_build", self.settings)
-
-    @property
-    def _arch_map(self):
-        return {
-            "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
-            "cortex-m0plus": ["-mcpu=cortex-m0plus", "-mfloat-abi=soft"],
-            "cortex-m1": ["-mcpu=cortex-m1", "-mfloat-abi=soft"],
-            "cortex-m3": ["-mcpu=cortex-m3", "-mfloat-abi=soft"],
-            "cortex-m4": ["-mcpu=cortex-m4", "-mfloat-abi=soft"],
-            "cortex-m4f": ["-mcpu=cortex-m4", "-mfloat-abi=hard"],
-            "cortex-m7": ["-mcpu=cortex-m7", "-mfloat-abi=soft"],
-            "cortex-m7f": [
-                "-mcpu=cortex-m7", "-mfloat-abi=hard", "-mfpu=fpv5-sp-d16"],
-            "cortex-m7d": [
-                "-mcpu=cortex-m7", "-mfloat-abi=hard", "-mfpu=fpv5-d16"],
-            "cortex-m23": ["-mcpu=cortex-m23", "-mfloat-abi=soft"],
-            "cortex-m33": ["-mcpu=cortex-m33", "-mfloat-abi=soft"],
-            "cortex-m33f": ["-mcpu=cortex-m33", "-mfloat-abi=hard"],
-            "cortex-m33p": ["-mcpu=cortex-m33p", "-mfloat-abi=soft"],
-            "cortex-m35pf": ["-mcpu=cortex-m35p", "-mfloat-abi=hard"],
-            "cortex-m55": ["-mcpu=cortex-m55", "-mfloat-abi=soft"],
-            # TODO: Add "cortex-m55" half floating point
-            # TODO: Add "cortex-m55" single floating point
-            # TODO: Add "cortex-m55" double floating point
-            "cortex-m85": ["-mcpu=cortex-m85", "-mfloat-abi=soft"],
-            # TODO: Add "cortex-m85" half floating point
-            # TODO: Add "cortex-m85" single floating point
-            # TODO: Add "cortex-m85" double floating point
-        }
-
-    @property
-    def _should_inject_compiler_flags(self):
-        return (self.settings_target and
-                self.settings_target.get_safe('arch') in self._arch_map)
-
-    @property
-    def _c_and_cxx_compiler_flags(self):
-        if self._should_inject_compiler_flags:
-            return self._arch_map[str(self.settings_target.get_safe('arch'))]
-        return []
-
-    @property
-    def _local_path_option_is_valid(self):
-        LOCAL_PATH = str(self.options.local_path)
-        return LOCAL_PATH and LOCAL_PATH != "unspecified"
-
-    @property
-    def _local_path_file(self):
-        return os.path.join(self.package_folder, "local_path.txt")
 
     def validate(self):
         supported_build_operating_systems = ["Linux", "Macos", "Windows"]
@@ -128,142 +90,194 @@ class ArmGnuToolchain(ConanFile):
                 f"{supported_build_architectures[build_os]}."
             )
 
-    def source(self):
-        pass
+    def build(self):
+        if self.options.local_path:
+            return  # Nothing to do here
+        # Otherwise, download the toolchain
 
-    def build_local(self):
-        LOCAL_PATH = str(self.options.local_path)
-        self.output.info(f"self.options.local_path={LOCAL_PATH}")
-        LOCAL_PATH_FILE = os.path.join(self.build_folder, "local_path.txt")
-        # We write the local_path.txt file to the build directory which will be
-        # relocated to the package directory. This file's existence will
-        # determine if a local path should be used or to use the downloaded
-        # files.
-        with open(LOCAL_PATH_FILE, "a") as f:
-            f.write(LOCAL_PATH)
+        VERSION_MAP = {
+            # License URL found from the "EULA" button on the
+            # https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+            # web page.
+            "11.3": "https://developer.arm.com/GetEula?Id=ff19df33-da82-491a-ab50-c605d4589a26",
+            "12.2": "https://developer.arm.com/GetEula?Id=2821586b-44d0-4e75-a06d-4279cd97eaae",
+            "12.3": "https://developer.arm.com/GetEula?Id=aa3d692d-bc99-4c8c-bce2-588181ddde13",
+            "13.2": "https://developer.arm.com/GetEula?Id=37988a7c-c40e-4b78-9fd1-62c20b507aa8",
+            "13.3": "https://developer.arm.com/GetEula?Id=d023c29f-8e81-49b0-979f-a5610ea2ccbb",
+            "14.2": "https://developer.arm.com/GetEula?Id=3aa52a53-d1cb-414b-b540-eaf29fdef0ca",
+        }
 
-    def build_remote(self):
-        if self.license_url:
-            download(self, self.license_url, "LICENSE", verify=False)
+        if self.version in VERSION_MAP:
+            download(self, VERSION_MAP[self.version], "LICENSE", verify=False)
+
         OS = str(self._settings_build.os)
         VERSION = self.version
         ARCH = str(self._settings_build.arch)
 
         # For some reason ARM decided to make this version have a different
         # folder layout compared to others so we need a special case for this.
-        strip_root = not (VERSION == "14.2" and OS ==
-                          "Windows" and ARCH == "x86_64")
+        should_strip_root = not (VERSION == "14.2" and OS ==
+                                 "Windows" and ARCH == "x86_64")
         get(self,
-            **self.conan_data["sources"][self.version][str(self._settings_build.os)][str(self._settings_build.arch)],
-            destination=self.build_folder, strip_root=strip_root)
-
-    def build(self):
-        if self._local_path_option_is_valid:
-            self.build_local()
-        else:
-            self.build_remote()
+            **self.conan_data["sources"][self.version][OS][ARCH],
+            destination=self.build_folder, strip_root=should_strip_root)
 
     def package_local_path(self):
-        copy(self, pattern="local_path.txt", src=self.build_folder,
-             dst=self.package_folder, keep_path=True)
+        LOCAL_PATH = str(self.options.local_path)
+        self.output.info(f"self.options.local_path={LOCAL_PATH}")
+        # Store the local path within a file named by the variable self.
+        # LOCAL_PATH_TXT. When the package_info is invoked, this file will be
+        # searched for and if it is found, will become the toolchain path.
+        Path(os.path.join(self.package_folder, self.LOCAL_PATH_TXT)
+             ).write_text(LOCAL_PATH)
 
     def package_remote_path(self):
-        DESTINATION = os.path.join(self.package_folder, "bin")
-        LICENSE_DIR = os.path.join(self.package_folder, "licenses/")
-        copy(self, pattern="arm-none-eabi/*", src=self.build_folder,
-             dst=DESTINATION, keep_path=True)
-        copy(self, pattern="bin/*", src=self.build_folder,
-             dst=DESTINATION, keep_path=True)
-        copy(self, pattern="include/*", src=self.build_folder,
-             dst=DESTINATION, keep_path=True)
-        copy(self, pattern="lib/*", src=self.build_folder,
-             dst=DESTINATION, keep_path=True)
-        copy(self, pattern="libexec/*", src=self.build_folder,
-             dst=DESTINATION, keep_path=True)
-        copy(self, pattern="share/*", src=self.build_folder,
-             dst=DESTINATION, keep_path=True)
+        LICENSE_DIR = os.path.join(self.package_folder, "licenses")
         copy(self, pattern="LICENSE*", src=self.build_folder,
              dst=LICENSE_DIR, keep_path=True)
+
+        DESTINATION = os.path.join(self.package_folder, "bin")
+        DIRECTORIES_TO_COPY = ["arm-none-eabi", "bin",
+                               "include", "lib", "libexec", "share"]
+        for directory in DIRECTORIES_TO_COPY:
+            copy(self, pattern=f"{directory}/*", src=self.build_folder,
+                 dst=DESTINATION, keep_path=True)
 
     def package(self):
         RESOURCE_DIR = os.path.join(self.package_folder, "res/")
         copy(self, pattern="toolchain.cmake", src=self.build_folder,
              dst=RESOURCE_DIR, keep_path=True)
-        if self._local_path_option_is_valid:
+        if self.options.local_path:
             self.package_local_path()
         else:
             self.package_remote_path()
 
     def setup_local_package_info(self):
         self.output.info("Using binaries found within local_path.txt")
-
-        self.cpp_info.includedirs = []
-        LOCAL_PATH_FILE = Path(os.path.join(
-            self.package_folder, "local_path.txt"))
-        LOCAL_PATH = LOCAL_PATH_FILE.read_text()
+        LOCAL_PATH = Path(os.path.join(
+            self.package_folder, self.LOCAL_PATH_TXT)).read_text()
         bin_folder = os.path.join(LOCAL_PATH, "bin/")
         self.cpp_info.bindirs = [bin_folder]
-        self.buildenv_info.append_path("PATH", bin_folder)
-        self.output.info(f"self.bin_folder = {bin_folder}")
-
-        self.conf_info.define(
-            "tools.cmake.cmaketoolchain:system_name", "Generic")
-        self.conf_info.define(
-            "tools.cmake.cmaketoolchain:system_processor", "ARM")
-
-        self.conf_info.define("tools.build.cross_building:can_run", False)
-        self.conf_info.define("tools.build:compiler_executables", {
-            "c": "arm-none-eabi-gcc",
-            "cpp": "arm-none-eabi-g++",
-            "asm": "arm-none-eabi-gcc",
-        })
-
-        f = os.path.join(self.package_folder, "res/toolchain.cmake")
-        self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
-
-        if self._should_inject_compiler_flags:
-            common_flags = self._c_and_cxx_compiler_flags
-            self.conf_info.append("tools.build:cflags", common_flags)
-            self.conf_info.append("tools.build:cxxflags", common_flags)
-            self.conf_info.append("tools.build:exelinkflags", common_flags)
-            self.output.info(f"C/C++ compiler & link flags: {common_flags}")
 
     def setup_remote_package_info(self):
         self.output.info("Using remote downloaded binaries")
-
-        self.cpp_info.includedirs = []
-
-        bin_folder = os.path.join(self.package_folder, "bin/bin")
+        bin_folder = os.path.join(os.path.join(
+            self.package_folder, "bin"), "bin")
         self.cpp_info.bindirs = [bin_folder]
-        self.buildenv_info.append_path("PATH", bin_folder)
 
+    def setup_bin_dirs(self):
+        LOCAL_PATH_FILE = os.path.join(
+            self.package_folder, self.LOCAL_PATH_TXT)
+        if os.path.exists(LOCAL_PATH_FILE):
+            self.output.info("Using binaries found within local_path")
+            bin_path = Path(LOCAL_PATH_FILE).read_text()
+        else:
+            self.output.info("Using remote downloaded binaries")
+            bin_path = os.path.join(self.package_folder, "bin")
+
+        # This should contain the command `arm-none-eabi-g++` and others
+        bin_folder = os.path.join(bin_path, "bin")
+
+        # This cpp_info is transmitted to the consumer's PATH
+        self.cpp_info.bindirs = [bin_folder]
+
+        self.output.info(f"self.cpp_info.bindirs = {self.cpp_info.bindirs}")
+
+    def package_info(self):
+        self.cpp_info.includedirs = []
         self.conf_info.define(
             "tools.cmake.cmaketoolchain:system_name", "Generic")
         self.conf_info.define(
             "tools.cmake.cmaketoolchain:system_processor", "ARM")
-
         self.conf_info.define("tools.build.cross_building:can_run", False)
         self.conf_info.define("tools.build:compiler_executables", {
             "c": "arm-none-eabi-gcc",
             "cpp": "arm-none-eabi-g++",
             "asm": "arm-none-eabi-gcc",
         })
-
         f = os.path.join(self.package_folder, "res/toolchain.cmake")
         self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
 
-        if self._should_inject_compiler_flags:
-            common_flags = self._c_and_cxx_compiler_flags
-            self.conf_info.append("tools.build:cflags", common_flags)
-            self.conf_info.append("tools.build:cxxflags", common_flags)
-            self.conf_info.append("tools.build:exelinkflags", common_flags)
-            self.output.info(f"C/C++ compiler & link flags: {common_flags}")
+        self.setup_bin_dirs()
+        self.inject_c_cxx_and_link_flags()
 
-    def package_info(self):
-        if os.path.exists(os.path.join(self.package_folder, "local_path.txt")):
-            self.setup_local_package_info()
-        else:
-            self.setup_remote_package_info()
+    def inject_c_cxx_and_link_flags(self):
+        c_flags = []
+        cxx_flags = []
+        exelinkflags = []
+
+        if self.options.lto:
+            c_flags.append("-flto")
+            cxx_flags.append("-flto")
+            exelinkflags.append("-flto")
+
+        if self.options.fat_lto:
+            c_flags.append("-ffat-lto-objects")
+            cxx_flags.append("-ffat-lto-objects")
+
+        if self.options.function_sections:
+            c_flags.append("-ffunction-sections")
+            cxx_flags.append("-ffunction-sections")
+
+        if self.options.data_sections:
+            c_flags.append("-fdata-sections")
+            cxx_flags.append("-fdata-sections")
+
+        if self.options.default_specs:
+            exelinkflags.append("--specs=nano.specs")
+            exelinkflags.append("--specs=nosys.specs")
+
+        if self.options.gc_sections:
+            exelinkflags.append("-gc-sections")
+
+        ARCH_MAP = {
+            "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
+            "cortex-m0plus": ["-mcpu=cortex-m0plus", "-mfloat-abi=soft"],
+            "cortex-m1": ["-mcpu=cortex-m1", "-mfloat-abi=soft"],
+            "cortex-m3": ["-mcpu=cortex-m3", "-mfloat-abi=soft"],
+            "cortex-m4": ["-mcpu=cortex-m4", "-mfloat-abi=soft"],
+            "cortex-m4f": ["-mcpu=cortex-m4", "-mfloat-abi=hard"],
+            "cortex-m7": ["-mcpu=cortex-m7", "-mfloat-abi=soft"],
+            "cortex-m7f": [
+                "-mcpu=cortex-m7", "-mfloat-abi=hard", "-mfpu=fpv5-sp-d16"],
+            "cortex-m7d": [
+                "-mcpu=cortex-m7", "-mfloat-abi=hard", "-mfpu=fpv5-d16"],
+            "cortex-m23": ["-mcpu=cortex-m23", "-mfloat-abi=soft"],
+            "cortex-m33": ["-mcpu=cortex-m33", "-mfloat-abi=soft"],
+            "cortex-m33f": ["-mcpu=cortex-m33", "-mfloat-abi=hard"],
+            "cortex-m33p": ["-mcpu=cortex-m33p", "-mfloat-abi=soft"],
+            "cortex-m35pf": ["-mcpu=cortex-m35p", "-mfloat-abi=hard"],
+            "cortex-m55": ["-mcpu=cortex-m55", "-mfloat-abi=soft"],
+            # TODO: Add "cortex-m55" half floating point
+            # TODO: Add "cortex-m55" single floating point
+            # TODO: Add "cortex-m55" double floating point
+            "cortex-m85": ["-mcpu=cortex-m85", "-mfloat-abi=soft"],
+            # TODO: Add "cortex-m85" half floating point
+            # TODO: Add "cortex-m85" single floating point
+            # TODO: Add "cortex-m85" double floating point
+        }
+
+        if (self.options.default_arch and self.settings_target and
+                self.settings_target.get_safe('arch') in ARCH_MAP):
+            ARCH_FLAGS = ARCH_MAP[self.settings_target.get_safe('arch')]
+            c_flags.extend(ARCH_FLAGS)
+            cxx_flags.extend(ARCH_FLAGS)
+            exelinkflags.extend(ARCH_FLAGS)
+
+        self.output.info(f'c_flags: {c_flags}')
+        self.output.info(f'cxx_flags: {cxx_flags}')
+        self.output.info(f'exelinkflags: {exelinkflags}')
+
+        self.conf_info.append("tools.build:cflags", c_flags)
+        self.conf_info.append("tools.build:cxxflags", cxx_flags)
+        self.conf_info.append("tools.build:exelinkflags", exelinkflags)
 
     def package_id(self):
         del self.info.options.local_path
+        del self.info.options.default_arch
+        del self.info.options.default_specs
+        del self.info.options.lto
+        del self.info.options.fat_lto
+        del self.info.options.function_sections
+        del self.info.options.data_sections
+        del self.info.options.gc_sections
