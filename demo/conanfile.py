@@ -7,18 +7,6 @@ class Demo(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "CMakeDeps", "CMakeToolchain", "VirtualBuildEnv"
 
-    @property
-    def _compiler_version(self):
-        SUPPORTED_COMPILER_VERSIONS = ["11.3", "12.2", "12.3"]
-
-        if self.settings.compiler.version not in SUPPORTED_COMPILER_VERSIONS:
-            raise ConanInvalidConfiguration(
-                "The GCC compiler version must be one of these " +
-                f"{SUPPORTED_COMPILER_VERSIONS}, provided version: " +
-                f"'{self.settings.compiler.version}'")
-
-        return str(self.settings.compiler.version)
-
     def validate(self):
         if self.settings.compiler != "gcc":
             raise ConanInvalidConfiguration(
