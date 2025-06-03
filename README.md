@@ -184,7 +184,8 @@ flag `-flto` to C, CXX, and link arguments.
 ### `fat-lto` (Default: `True`)
 
 This option can be `True` or `False` and when set to `True` will inject the
-flag `-flto` to C, CXX, and link arguments.
+flag `-ffat-lto-objects` to C, CXX, and link arguments. This option is
+**ignored** if the `lto` option is not `True`.
 
 ### `function_sections` (Default: `True`)
 

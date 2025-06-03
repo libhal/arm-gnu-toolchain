@@ -48,7 +48,7 @@ class ArmGnuToolchain(ConanFile):
         "local_path": "Provide a path to your local ARM GNU Toolchain. If not set, the official toolchain is downloaded from the ARM website.",
         "default_arch": "Automatically inject architecture appropriate the -mcpu and -mfloat-abi arguments into compilation flags.",
         "lto": "Enable LTO support in binaries and intermediate files (.o and .a files)",
-        "fat_lto": "Enable linkers without LTO support to still build with LTO enabled binaries. This adds both LTO information and compiled code into the object and archive files.",
+        "fat_lto": "Enable linkers without LTO support to still build with LTO enabled binaries. This adds both LTO information and compiled code into the object and archive files. This option is ignored if the `lto` option is False",
         "function_sections": "Enable -ffunction-sections which splits each function into their own subsection allowing link time garbage collection of the sections.",
         "data_sections": "Enable -fdata-sections which splits each statically defined block memory into their own subsection allowing link time garbage collection of the sections.",
         "gc_sections": "Enable garbage collection at link stage. Only useful if at least function_sections and data_sections is enabled."
@@ -208,9 +208,9 @@ class ArmGnuToolchain(ConanFile):
             cxx_flags.append("-flto")
             exelinkflags.append("-flto")
 
-        if self.options.fat_lto:
-            c_flags.append("-ffat-lto-objects")
-            cxx_flags.append("-ffat-lto-objects")
+            if self.options.fat_lto:
+                c_flags.append("-ffat-lto-objects")
+                cxx_flags.append("-ffat-lto-objects")
 
         if self.options.function_sections:
             c_flags.append("-ffunction-sections")
