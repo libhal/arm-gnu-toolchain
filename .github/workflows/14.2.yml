@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/verify_and_upload.yml
     with:
       version: "14.2"
     secrets: inherit

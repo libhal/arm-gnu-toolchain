@@ -32,6 +32,7 @@ class ArmGnuToolchain(ConanFile):
         "function_sections": [True,  False],
         "data_sections": [True,  False],
         "gc_sections": [True, False],
+        "default_libc": [True, False]
     }
 
     default_options = {
@@ -42,6 +43,7 @@ class ArmGnuToolchain(ConanFile):
         "function_sections": True,
         "data_sections": True,
         "gc_sections": True,
+        "default_libc": True,
     }
 
     options_description = {
@@ -51,7 +53,8 @@ class ArmGnuToolchain(ConanFile):
         "fat_lto": "Enable linkers without LTO support to still build with LTO enabled binaries. This adds both LTO information and compiled code into the object and archive files. This option is ignored if the `lto` option is False",
         "function_sections": "Enable -ffunction-sections which splits each function into their own subsection allowing link time garbage collection of the sections.",
         "data_sections": "Enable -fdata-sections which splits each statically defined block memory into their own subsection allowing link time garbage collection of the sections.",
-        "gc_sections": "Enable garbage collection at link stage. Only useful if at least function_sections and data_sections is enabled."
+        "gc_sections": "Enable garbage collection at link stage. Only useful if at least function_sections and data_sections is enabled.",
+        "default_libc": "Provide --specs=nano and --specs=nosys libc libraries for the linker in order to generate a binary. Disable this if your application would like to link against a different libc implementation."
     }
 
     LOCAL_PATH_TXT = "local_path.txt"
@@ -87,9 +90,15 @@ class ArmGnuToolchain(ConanFile):
                 f"{supported_build_architectures[build_os]}."
             )
 
-    def build(self):
+    def package(self):
+        RESOURCE_DIR = Path(self.package_folder) / "res"
+        copy(self, pattern="toolchain.cmake", src=self.source_folder,
+             dst=RESOURCE_DIR, keep_path=True)
+
         if self.options.local_path:
-            return  # Nothing to do here
+            self.package_local_path()
+            return
+
         # Otherwise, download the toolchain
 
         VERSION_MAP = {
@@ -117,7 +126,7 @@ class ArmGnuToolchain(ConanFile):
                                  "Windows" and ARCH == "x86_64")
         get(self,
             **self.conan_data["sources"][self.version][OS][ARCH],
-            destination=self.build_folder, strip_root=should_strip_root)
+            destination=self.package_folder, strip_root=should_strip_root)
 
     def package_local_path(self):
         LOCAL_PATH = str(self.options.local_path)
@@ -125,58 +134,18 @@ class ArmGnuToolchain(ConanFile):
         # Store the local path within a file named by the variable self.
         # LOCAL_PATH_TXT. When the package_info is invoked, this file will be
         # searched for and if it is found, will become the toolchain path.
-        Path(os.path.join(self.package_folder, self.LOCAL_PATH_TXT)
-             ).write_text(LOCAL_PATH)
-
-    def package_remote_path(self):
-        LICENSE_DIR = os.path.join(self.package_folder, "licenses")
-        copy(self, pattern="LICENSE*", src=self.build_folder,
-             dst=LICENSE_DIR, keep_path=True)
-
-        DESTINATION = os.path.join(self.package_folder, "bin")
-        DIRECTORIES_TO_COPY = ["arm-none-eabi", "bin",
-                               "include", "lib", "libexec", "share"]
-        for directory in DIRECTORIES_TO_COPY:
-            copy(self, pattern=f"{directory}/*", src=self.build_folder,
-                 dst=DESTINATION, keep_path=True)
-
-    def package(self):
-        RESOURCE_DIR = os.path.join(self.package_folder, "res/")
-        copy(self, pattern="toolchain.cmake", src=self.build_folder,
-             dst=RESOURCE_DIR, keep_path=True)
-        if self.options.local_path:
-            self.package_local_path()
-        else:
-            self.package_remote_path()
-
-    def setup_local_package_info(self):
-        self.output.info("Using binaries found within local_path.txt")
-        LOCAL_PATH = Path(os.path.join(
-            self.package_folder, self.LOCAL_PATH_TXT)).read_text()
-        bin_folder = os.path.join(LOCAL_PATH, "bin/")
-        self.cpp_info.bindirs = [bin_folder]
-
-    def setup_remote_package_info(self):
-        self.output.info("Using remote downloaded binaries")
-        bin_folder = os.path.join(os.path.join(
-            self.package_folder, "bin"), "bin")
-        self.cpp_info.bindirs = [bin_folder]
+        (Path(self.package_folder) / self.LOCAL_PATH_TXT).write_text(LOCAL_PATH)
 
     def setup_bin_dirs(self):
-        LOCAL_PATH_FILE = os.path.join(
-            self.package_folder, self.LOCAL_PATH_TXT)
-        if os.path.exists(LOCAL_PATH_FILE):
+        LOCAL_PATH_FILE = Path(self.package_folder) / self.LOCAL_PATH_TXT
+        if LOCAL_PATH_FILE.exists():
             self.output.info("Using binaries found within local_path")
-            bin_path = Path(LOCAL_PATH_FILE).read_text()
+            BIN_PATH = Path(LOCAL_PATH_FILE).read_text() / "bin"
         else:
             self.output.info("Using remote downloaded binaries")
-            bin_path = os.path.join(self.package_folder, "bin")
+            BIN_PATH = Path(self.package_folder) / "bin"
 
-        # This should contain the command `arm-none-eabi-g++` and others
-        bin_folder = os.path.join(bin_path, "bin")
-
-        # This cpp_info is transmitted to the consumer's PATH
-        self.cpp_info.bindirs = [bin_folder]
+        self.cpp_info.bindirs = [BIN_PATH]
 
         self.output.info(f"self.cpp_info.bindirs = {self.cpp_info.bindirs}")
 
@@ -203,6 +172,31 @@ class ArmGnuToolchain(ConanFile):
         cxx_flags = []
         exelinkflags = []
 
+        # Set optimization level based on build type
+        BUILD_TYPE = str(self.settings.build_type)
+        if BUILD_TYPE == "Debug":
+            # Use -Og for debuggable but LTO-compatible code
+            c_flags.append("-Og")
+            cxx_flags.append("-Og")
+
+            # Note about Og and O0. If you use LTO with O0, LTO seems to lose
+            # track of the symbols and gives an error stating that some symbols
+            # cannot be found like std::pmr::memory_resource or atomic
+            # operations. There seems to be some sort of issue of disabling
+            # optimizations but also enabling link time optimizations. To get
+            # over this, we've chosen to use `-Og` as your Debug build. This
+            # also provides the added benefit of apply reasonable
+            # optimizations, reducing binary size and improving performance
+            # without reducing debuggability.
+        elif BUILD_TYPE == "MinSizeRel":
+            # -Os prioritizes size optimizations
+            c_flags.append("-Os")
+            cxx_flags.append("-Os")
+        elif BUILD_TYPE in ["Release", "RelWithDebInfo"]:
+            # Use -O3 for maximum performance at the expense of space
+            c_flags.append("-O3")
+            cxx_flags.append("-O3")
+
         if self.options.lto:
             c_flags.append("-flto")
             cxx_flags.append("-flto")
@@ -222,6 +216,10 @@ class ArmGnuToolchain(ConanFile):
 
         if self.options.gc_sections:
             exelinkflags.append("-Wl,--gc-sections")
+
+        if self.options.default_libc:
+            exelinkflags.append("--specs=nano.specs ")
+            exelinkflags.append("--specs=nosys.specs ")
 
         ARCH_MAP = {
             "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
