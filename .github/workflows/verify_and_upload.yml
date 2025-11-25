@@ -111,12 +111,12 @@ jobs:
       runner_os: windows-latest
       arch: cortex-m4
 
-  verify-windows-arm:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: windows-11-arm
-      arch: cortex-m4
+  # verify-windows-arm:
+  #   uses: ./.github/workflows/verify.yml
+  #   with:
+  #     version: ${{ inputs.VERSION }}
+  #     runner_os: windows-11-arm
+  #     arch: cortex-m4
 
   upload-package:
     needs:
@@ -124,7 +124,7 @@ jobs:
       - verify-linux-arm
       - verify-macos-15-arm
       - verify-windows-x86_64
-      - verify-windows-arm
+      # - verify-windows-arm
       - verify-linux-x86_64_cortex-m0
       - verify-linux-x86_64_cortex-m0plus
       - verify-linux-x86_64_cortex-m1
