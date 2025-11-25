@@ -1,4 +1,4 @@
 [settings]
+arch=cortex-m7
 build_type=MinSizeRel
-arch=cortex-m4f
 os=baremetal

@@ -202,6 +202,13 @@ flag `-fdata-sections` to C and CXX arguments.
 This option can be `True` or `False` and when set to `True` will inject the
 flag `--gc_sections` to the linker arguments.
 
+### `default_libc` (Default: `True`)
+
+This option can be `True` or `False` and when set to `True` will inject the
+flags `--specs=nano.specs` and `--specs=nosys.specs` to the linker arguments
+in order to link against the nano and nosys libc libraries. Disable this if
+your application would like to link against a different libc implementation.
+
 ## ✨ Adding New Versions of GCC
 
 If ARM produces a new GCC version on their

@@ -1,0 +1,4 @@
+[settings]
+arch=cortex-m33p
+build_type=MinSizeRel
+os=baremetal

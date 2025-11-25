@@ -1,0 +1,141 @@
+#!/usr/bin/python
+#
+# Copyright 2024 - 2025 Khalil Estell and the libhal contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: 🔍 Verify
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      upload:
+        type: boolean
+        default: true
+      version:
+        type: string
+        required: true
+
+jobs:
+  verify-linux-x86_64:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m4
+
+  verify-linux-x86_64_cortex-m0:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m0
+
+  verify-linux-x86_64_cortex-m0plus:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m0plus
+
+  verify-linux-x86_64_cortex-m1:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m1
+
+  verify-linux-x86_64_cortex-m3:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m3
+
+  verify-linux-x86_64_cortex-m4:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m4
+
+  verify-linux-x86_64_cortex-m4f:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m4f
+
+  verify-linux-x86_64_cortex-m7d:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m7d
+
+  verify-linux-x86_64_cortex-m23:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04
+      arch: cortex-m23
+
+  verify-linux-arm:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: ubuntu-24.04-arm
+      arch: cortex-m4
+
+  verify-macos-15-arm:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: macos-15
+      arch: cortex-m4
+
+  verify-windows-x86_64:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: windows-latest
+      arch: cortex-m4
+
+  verify-windows-arm:
+    uses: ./.github/workflows/verify.yml
+    with:
+      version: ${{ inputs.VERSION }}
+      runner_os: windows-11-arm
+      arch: cortex-m4
+
+  upload-package:
+    needs:
+      - verify-linux-x86_64
+      - verify-linux-arm
+      - verify-macos-15-arm
+      - verify-windows-x86_64
+      - verify-windows-arm
+      - verify-linux-x86_64_cortex-m0
+      - verify-linux-x86_64_cortex-m0plus
+      - verify-linux-x86_64_cortex-m1
+      - verify-linux-x86_64_cortex-m3
+      - verify-linux-x86_64_cortex-m4
+      - verify-linux-x86_64_cortex-m4f
+      - verify-linux-x86_64_cortex-m7d
+      - verify-linux-x86_64_cortex-m23
+
+    if: ${{ startsWith(github.ref, 'refs/tags/') && inputs.upload == true }}
+    uses: ./.github/workflows/upload.yml
+    secrets: inherit
+    with:
+      version: ${{ inputs.VERSION }}

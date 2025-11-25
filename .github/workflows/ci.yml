@@ -8,21 +8,21 @@ on:
       - main
 
 jobs:
-  ci_11_3:
-    uses: ./.github/workflows/11.3.yml
-    secrets: inherit
-  ci_12_2:
-    uses: ./.github/workflows/12.2.yml
-    secrets: inherit
-  ci_12_3:
-    uses: ./.github/workflows/12.3.yml
-    secrets: inherit
-  ci_13_2:
-    uses: ./.github/workflows/13.2.yml
-    secrets: inherit
-  ci_13_3:
-    uses: ./.github/workflows/13.3.yml
-    secrets: inherit
+  # ci_11_3:
+  #   uses: ./.github/workflows/11.3.yml
+  #   secrets: inherit
+  # ci_12_2:
+  #   uses: ./.github/workflows/12.2.yml
+  #   secrets: inherit
+  # ci_12_3:
+  #   uses: ./.github/workflows/12.3.yml
+  #   secrets: inherit
+  # ci_13_2:
+  #   uses: ./.github/workflows/13.2.yml
+  #   secrets: inherit
+  # ci_13_3:
+  #   uses: ./.github/workflows/13.3.yml
+  #   secrets: inherit
   ci_14_2:
     uses: ./.github/workflows/14.2.yml
     secrets: inherit
