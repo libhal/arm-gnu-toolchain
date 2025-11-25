@@ -74,6 +74,3 @@ jobs:
 
       - name: 📦 Build Demos Conan Package [ build_type=Release ]
         run: conan build demo -pr conan/profiles/v1/arm-gcc-${{ inputs.version }} --build=missing:cmake/* -s build_type=MinSizeRel -s:h os=baremetal -s:h arch=${{ inputs.arch }}
-
-      - name: ▶️ Run Demo
-        run: demo/build/Release/demo
