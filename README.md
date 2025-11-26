@@ -205,9 +205,12 @@ flag `--gc_sections` to the linker arguments.
 ### `default_libc` (Default: `True`)
 
 This option can be `True` or `False` and when set to `True` will inject the
-flags `--specs=nano.specs` and `--specs=nosys.specs` to the linker arguments
-in order to link against the nano and nosys libc libraries. Disable this if
-your application would like to link against a different libc implementation.
+flag `--specs=nosys.specs` to the linker arguments. `nosys`  provides weak
+stubs for newlib libc APIs like `exit()`, `kill()`, `sbrk()` etc. This allows
+binaries to be linked without having to define all of the newlib libc
+definitions up front. It is UB to call any of these APIs without adding the
+necessary libc APIs. This is set to True in order to allow conan test_packages
+to link binaries. It is not advised to depend on `libc` for C API definitions.
 
 ## ✨ Adding New Versions of GCC
 
