@@ -23,7 +23,6 @@ class ArmGnuToolchain(ConanFile):
     exports_sources = "toolchain.cmake"
     package_type = "application"
     build_policy = "missing"
-    short_paths = True
     options = {
         "local_path": ["ANY"],
         "default_arch": [True, False],
@@ -54,7 +53,7 @@ class ArmGnuToolchain(ConanFile):
         "function_sections": "Enable -ffunction-sections which splits each function into their own subsection allowing link time garbage collection of the sections.",
         "data_sections": "Enable -fdata-sections which splits each statically defined block memory into their own subsection allowing link time garbage collection of the sections.",
         "gc_sections": "Enable garbage collection at link stage. Only useful if at least function_sections and data_sections is enabled.",
-        "default_libc": "Provide --specs=nano and --specs=nosys libc libraries for the linker in order to generate a binary. Disable this if your application would like to link against a different libc implementation."
+        "default_libc": "Link against `nosys` libc specification. This injects the `--specs=nosys.specs` argument to the linker during link. `nosys`  provides weak stubs for newlib libc APIs like exit(), kill(), sbrk() etc. This allows binaries to be linked without having to define all of the newlib libc definitions up front. It is UB to call any of these APIs without adding the necessary libc APIs. This is set to True in order to allow test_packages to link. It is not advised to depend on `libc` for C API definitions."
     }
 
     LOCAL_PATH_TXT = "local_path.txt"
@@ -218,8 +217,7 @@ class ArmGnuToolchain(ConanFile):
             exelinkflags.append("-Wl,--gc-sections")
 
         if self.options.default_libc:
-            exelinkflags.append("--specs=nano.specs ")
-            exelinkflags.append("--specs=nosys.specs ")
+            exelinkflags.append("--specs=nosys.specs")
 
         ARCH_MAP = {
             "cortex-m0": ["-mcpu=cortex-m0", "-mfloat-abi=soft"],
@@ -271,3 +269,4 @@ class ArmGnuToolchain(ConanFile):
         del self.info.options.function_sections
         del self.info.options.data_sections
         del self.info.options.gc_sections
+        del self.info.options.default_libc
