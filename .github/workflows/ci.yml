@@ -26,3 +26,6 @@ jobs:
   ci_14_2:
     uses: ./.github/workflows/14.2.yml
     secrets: inherit
+  ci_14_3:
+    uses: ./.github/workflows/14.3.yml
+    secrets: inherit

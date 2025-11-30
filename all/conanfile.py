@@ -110,6 +110,7 @@ class ArmGnuToolchain(ConanFile):
             "13.2": "https://developer.arm.com/GetEula?Id=37988a7c-c40e-4b78-9fd1-62c20b507aa8",
             "13.3": "https://developer.arm.com/GetEula?Id=d023c29f-8e81-49b0-979f-a5610ea2ccbb",
             "14.2": "https://developer.arm.com/GetEula?Id=3aa52a53-d1cb-414b-b540-eaf29fdef0ca",
+            "14.3": "https://developer.arm.com/GetEula?Id=15d9660a-2059-4985-85e9-c01cdd4b1ba0",
         }
 
         if self.version in VERSION_MAP:
