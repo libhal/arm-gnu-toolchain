@@ -122,8 +122,8 @@ class ArmGnuToolchain(ConanFile):
 
         # For some reason ARM decided to make this version have a different
         # folder layout compared to others so we need a special case for this.
-        should_strip_root = not (VERSION == "14.2" and OS ==
-                                 "Windows" and ARCH == "x86_64")
+        should_strip_root = not ((VERSION == "14.2" or VERSION == "14.3")
+                                 and OS == "Windows" and ARCH == "x86_64")
         get(self,
             **self.conan_data["sources"][self.version][OS][ARCH],
             destination=self.package_folder, strip_root=should_strip_root)
