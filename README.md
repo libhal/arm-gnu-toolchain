@@ -6,12 +6,17 @@ compiled using this toolchain.
 
 Supported version:
 
+- GCC 11 (alias for 11.3)
 - GCC 11.3
+- GCC 12 (alias for 12.3)
 - GCC 12.2
 - GCC 12.3
+- GCC 13 (alias for 13.3)
 - GCC 13.2
 - GCC 13.3
+- GCC 14 (alias for 14.3)
 - GCC 14.2
+- GCC 14.3
 
 Supported Architectures:
 
@@ -131,6 +136,24 @@ should be incremented if the behavior of the profiles changes significantly
 enough to break current applications.
 
 All profiles use `libstdc++11` as this is the latest GCC C++ ABI.
+
+### Profile Naming Scheme
+
+**Broad Compatibility Profiles** (Recommended):
+
+- Format: `arm-gcc-X` or `arm-gcc-X.Y`
+- Example: `arm-gcc-12`, `arm-gcc-12.2`, `arm-gcc-12.3`
+- Behavior: Uses `compiler.version=X` (major version only)
+- All GCC 12.x profiles use `compiler.version=12`, making binaries compatible across minor versions
+- Use these for maximum flexibility - binaries built with `arm-gcc-12.2` work with `arm-gcc-12.3`
+
+**Exact Version Profiles**:
+
+- Format: `arm-gcc-X.Y-exact`
+- Example: `arm-gcc-12.3-exact`
+- Behavior: Uses `compiler.version=X.Y` (exact version)
+- Requires strict version matching - binaries built with GCC 12.3 won't mix with GCC 12.2
+- Use only when you need strict ABI guarantees
 
 ## 📦 Building & Installing the Tool Package
 
