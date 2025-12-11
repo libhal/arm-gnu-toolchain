@@ -1,0 +1,12 @@
+name: 🚀 13 Deploy
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/verify_and_upload.yml
+    with:
+      version: "13"
+    secrets: inherit
