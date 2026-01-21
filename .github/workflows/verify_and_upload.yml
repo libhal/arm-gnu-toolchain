@@ -23,10 +23,6 @@ on:
         type: string
         required: true
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   verify-linux-x86_64:
     uses: ./.github/workflows/verify.yml
