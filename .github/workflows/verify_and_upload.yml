@@ -27,86 +27,62 @@ jobs:
   verify-linux-x86_64:
     uses: ./.github/workflows/verify.yml
     with:
-      version: ${{ inputs.VERSION }}
+      version: ${{ inputs.version }}
       runner_os: ubuntu-24.04
       arch: cortex-m4
-
-  verify-linux-x86_64_cortex-m0:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m0
-
-  verify-linux-x86_64_cortex-m0plus:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m0plus
-
-  verify-linux-x86_64_cortex-m1:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m1
-
-  verify-linux-x86_64_cortex-m3:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m3
-
-  verify-linux-x86_64_cortex-m4:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m4
-
-  verify-linux-x86_64_cortex-m4f:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m4f
-
-  verify-linux-x86_64_cortex-m7d:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m7d
-
-  verify-linux-x86_64_cortex-m23:
-    uses: ./.github/workflows/verify.yml
-    with:
-      version: ${{ inputs.VERSION }}
-      runner_os: ubuntu-24.04
-      arch: cortex-m23
 
   verify-linux-arm:
     uses: ./.github/workflows/verify.yml
     with:
-      version: ${{ inputs.VERSION }}
+      version: ${{ inputs.version }}
       runner_os: ubuntu-24.04-arm
       arch: cortex-m4
 
   verify-macos-15-arm:
     uses: ./.github/workflows/verify.yml
     with:
-      version: ${{ inputs.VERSION }}
+      version: ${{ inputs.version }}
       runner_os: macos-15
       arch: cortex-m4
 
   verify-windows-x86_64:
     uses: ./.github/workflows/verify.yml
     with:
-      version: ${{ inputs.VERSION }}
+      version: ${{ inputs.version }}
       runner_os: windows-latest
       arch: cortex-m4
+
+  cortex-m_gcc:
+    runs-on: ubuntu-latest
+    env:
+      VERBOSE: 1
+    steps:
+      - name: 📥 Checkout target repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: 📥 Install CMake & Conan
+        run: pipx install conan>=2.22.2
+
+      - name: 📡 Install libhal/conan-config2
+        run: conan config install https://github.com/libhal/conan-config2.git
+
+      - name: 📡 Run `conan hal setup`
+        run: conan hal setup
+
+      - name: 📦 Create Conan Package
+        run: conan create all --version=${{ inputs.version }}
+
+      - name: 📦 Build packages for all Cortex-M architectures
+        run: |
+          bash .github/scripts/build_all_variants.sh \
+            --dir demo \
+            --version ${{ inputs.version }} \
+            --compiler-profile conan/profiles/v1/arm-gcc-${{ inputs.version }} \
+            --conan-version 2.22.2 \
+            --arch-list cortex-m0,cortex-m0plus,cortex-m1,cortex-m3,cortex-m4,cortex-m4f,cortex-m7f,cortex-m7d,cortex-m23,cortex-m33,cortex-m33f,cortex-m35pf,cortex-m55,cortex-m85
 
   upload-package:
     needs:
@@ -114,17 +90,10 @@ jobs:
       - verify-linux-arm
       - verify-macos-15-arm
       - verify-windows-x86_64
-      - verify-linux-x86_64_cortex-m0
-      - verify-linux-x86_64_cortex-m0plus
-      - verify-linux-x86_64_cortex-m1
-      - verify-linux-x86_64_cortex-m3
-      - verify-linux-x86_64_cortex-m4
-      - verify-linux-x86_64_cortex-m4f
-      - verify-linux-x86_64_cortex-m7d
-      - verify-linux-x86_64_cortex-m23
+      - cortex-m_gcc
 
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     uses: ./.github/workflows/upload.yml
     secrets: inherit
     with:
-      version: ${{ inputs.VERSION }}
+      version: ${{ inputs.version }}

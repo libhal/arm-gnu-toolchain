@@ -94,32 +94,11 @@ class ArmGnuToolchain(ConanFile):
         copy(self, pattern="toolchain.cmake", src=self.source_folder,
              dst=RESOURCE_DIR, keep_path=True)
 
+        # Use local path OR
         if self.options.local_path:
             self.package_local_path()
             return
-
-        # Otherwise, download the toolchain
-
-        VERSION_MAP = {
-            # License URL found from the "EULA" button on the
-            # https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
-            # web page.
-            "11.3": "https://developer.arm.com/GetEula?Id=ff19df33-da82-491a-ab50-c605d4589a26",
-            "11": "https://developer.arm.com/GetEula?Id=ff19df33-da82-491a-ab50-c605d4589a26",
-            "12.2": "https://developer.arm.com/GetEula?Id=2821586b-44d0-4e75-a06d-4279cd97eaae",
-            "12.3": "https://developer.arm.com/GetEula?Id=aa3d692d-bc99-4c8c-bce2-588181ddde13",
-            "12": "https://developer.arm.com/GetEula?Id=aa3d692d-bc99-4c8c-bce2-588181ddde13",
-            "13.2": "https://developer.arm.com/GetEula?Id=37988a7c-c40e-4b78-9fd1-62c20b507aa8",
-            "13.3": "https://developer.arm.com/GetEula?Id=d023c29f-8e81-49b0-979f-a5610ea2ccbb",
-            "13": "https://developer.arm.com/GetEula?Id=d023c29f-8e81-49b0-979f-a5610ea2ccbb",
-            "14.2": "https://developer.arm.com/GetEula?Id=3aa52a53-d1cb-414b-b540-eaf29fdef0ca",
-            "14.3": "https://developer.arm.com/GetEula?Id=15d9660a-2059-4985-85e9-c01cdd4b1ba0",
-            "14": "https://developer.arm.com/GetEula?Id=15d9660a-2059-4985-85e9-c01cdd4b1ba0",
-        }
-
-        if self.version in VERSION_MAP:
-            download(self, VERSION_MAP[self.version], "LICENSE", verify=False)
-
+        # Download the toolchain...
         OS = str(self._settings_build.os)
         VERSION = self.version
         ARCH = str(self._settings_build.arch)
