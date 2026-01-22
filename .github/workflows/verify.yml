@@ -53,8 +53,7 @@ jobs:
         run: conan hal setup
 
       - name: 📦 Create Conan Package
-        working-directory: all
-        run: conan create . --version=${{ inputs.version }}
+        run: conan create all --version=${{ inputs.version }} -pr:b default -s:h build_type=MinSizeRel -s:h os=baremetal -s:h arch=cortex-m4 -pr:h conan/profiles/v1/arm-gcc-${{ inputs.version }}-no-tool --build=missing --build-require
 
       - name: 📦 Build Demos Conan Package [ build_type=Debug ]
         run: conan build demo -pr conan/profiles/v1/arm-gcc-${{ inputs.version }} --build=missing:cmake/* -s build_type=MinSizeRel -s:h os=baremetal -s:h arch=${{ inputs.arch }}

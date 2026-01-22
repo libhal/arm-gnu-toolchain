@@ -1,8 +1,7 @@
 from pathlib import Path
 from conan import ConanFile
-from conan.tools.files import get, copy, download
+from conan.tools.files import get, copy
 from conan.errors import ConanInvalidConfiguration
-import os
 
 
 required_conan_version = ">=2.0.0"
@@ -98,6 +97,7 @@ class ArmGnuToolchain(ConanFile):
         if self.options.local_path:
             self.package_local_path()
             return
+
         # Download the toolchain...
         OS = str(self._settings_build.os)
         VERSION = self.version
@@ -145,8 +145,33 @@ class ArmGnuToolchain(ConanFile):
             "cpp": "arm-none-eabi-g++",
             "asm": "arm-none-eabi-gcc",
         })
-        f = os.path.join(self.package_folder, "res/toolchain.cmake")
-        self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
+
+        # Blank out CMakeToolchain's default optimization flags
+        # We manage all flags ourselves via tools.build:cxxflags
+        self.conf_info.define("tools.cmake.cmaketoolchain:extra_variables", {
+            # Blank out CMake's default optimization flags
+            "CMAKE_CXX_FLAGS_DEBUG": "",
+            "CMAKE_CXX_FLAGS_RELEASE": "",
+            "CMAKE_CXX_FLAGS_MINSIZEREL": "",
+            "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "",
+            "CMAKE_C_FLAGS_DEBUG": "",
+            "CMAKE_C_FLAGS_RELEASE": "",
+            "CMAKE_C_FLAGS_MINSIZEREL": "",
+            "CMAKE_C_FLAGS_RELWITHDEBINFO": "",
+
+            # Cross-compilation workarounds
+            "CMAKE_CXX_COMPILER_WORKS": "TRUE",
+            "CMAKE_C_COMPILER_WORKS": "TRUE",
+            "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+
+            # Binutils
+            "CMAKE_AR": "arm-none-eabi-ar",
+            "CMAKE_RANLIB": "arm-none-eabi-ranlib",
+        })
+
+        TOOLCHAIN_PATH = str(Path(self.package_folder) / "res/toolchain.cmake")
+        self.conf_info.append(
+            "tools.cmake.cmaketoolchain:user_toolchain", TOOLCHAIN_PATH)
 
         self.setup_bin_dirs()
         self.inject_c_cxx_and_link_flags()
@@ -156,30 +181,30 @@ class ArmGnuToolchain(ConanFile):
         cxx_flags = []
         exelinkflags = []
 
-        # Set optimization level based on build type
-        BUILD_TYPE = str(self.settings.build_type)
-        if BUILD_TYPE == "Debug":
-            # Use -Og for debuggable but LTO-compatible code
-            c_flags.append("-Og")
-            cxx_flags.append("-Og")
-
-            # Note about Og and O0. If you use LTO with O0, LTO seems to lose
-            # track of the symbols and gives an error stating that some symbols
-            # cannot be found like std::pmr::memory_resource or atomic
-            # operations. There seems to be some sort of issue of disabling
-            # optimizations but also enabling link time optimizations. To get
-            # over this, we've chosen to use `-Og` as your Debug build. This
-            # also provides the added benefit of apply reasonable
-            # optimizations, reducing binary size and improving performance
-            # without reducing debuggability.
-        elif BUILD_TYPE == "MinSizeRel":
-            # -Os prioritizes size optimizations
-            c_flags.append("-Os")
-            cxx_flags.append("-Os")
-        elif BUILD_TYPE in ["Release", "RelWithDebInfo"]:
-            # Use -O3 for maximum performance at the expense of space
-            c_flags.append("-O3")
-            cxx_flags.append("-O3")
+        if self.settings_target:
+            # Set optimization level based on build type
+            BUILD_TYPE = str(self.settings_target.build_type)
+            if BUILD_TYPE == "Debug":
+                # Use -Og for debuggable but LTO-compatible code
+                c_flags.append("-Og")
+                cxx_flags.append("-Og")
+                # Note about Og and O0. If you use LTO with O0, LTO seems to
+                # lose track of the symbols and gives an error stating that some
+                # symbols cannot be found like std::pmr::memory_resource or
+                # atomic operations. There seems to be some sort of issue of
+                # disabling optimizations but also enabling link time
+                # optimizations. To get over this, we've chosen to use `-Og` as
+                # your Debug build. This also provides the added benefit of
+                # apply reasonable optimizations, reducing binary size and
+                # improving performance without reducing debuggability.
+            elif BUILD_TYPE == "MinSizeRel":
+                # -Os prioritizes size optimizations
+                c_flags.append("-Os")
+                cxx_flags.append("-Os")
+            elif BUILD_TYPE in ["Release", "RelWithDebInfo"]:
+                # Use -O3 for maximum performance at the expense of space
+                c_flags.append("-O3")
+                cxx_flags.append("-O3")
 
         if self.options.lto:
             c_flags.append("-flto")

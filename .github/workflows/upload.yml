@@ -52,4 +52,4 @@ jobs:
         run: conan remote login -p $PASSWORD libhal $JFROG_USER
 
       - name: 🆙 Upload package to Conan Package Repo
-        run: conan upload "arm-gnu-toolchain/*" --only-recipe --confirm -r=libhal
+        run: conan upload "arm-gnu-toolchain/${{ inputs.version }}" --only-recipe --confirm -r=libhal
