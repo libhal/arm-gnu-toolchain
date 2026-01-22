@@ -15,7 +15,6 @@ set -x
 
 # Default values
 DIR="."
-VERSION="latest"
 COMPILER_PROFILE="hal/tc/llvm"
 ARCH_LIST=("cortex-m3")
 CONAN_VERSION=2.23.0
@@ -26,10 +25,6 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --dir)
       DIR="$2"
-      shift 2
-      ;;
-    --version)
-      VERSION="$2"
       shift 2
       ;;
     --compiler-profile)
@@ -61,7 +56,6 @@ echo "========================================"
 echo "Baremetal Package Build Configuration"
 echo "========================================"
 echo "DIR:              $DIR"
-echo "VERSION:          $VERSION"
 echo "COMPILER_PROFILE: $COMPILER_PROFILE"
 echo "CONAN_VERSION:    $CONAN_VERSION"
 echo "ARCH_LIST:        ${ARCH_LIST[*]}"
@@ -77,9 +71,9 @@ conan hal setup
 for ARCH in "${ARCH_LIST[@]}"; do
   echo "Building for architecture: $ARCH"
 
-  conan build $DIR -s:h build_type=Debug -s:h os=baremetal -s:h arch=$ARCH --version $VERSION -pr:h $COMPILER_PROFILE --build=missing $EXTRA_CONAN_ARGS
+  conan build $DIR -pr:b default -s:h build_type=Debug -s:h os=baremetal -s:h arch=$ARCH -pr:h $COMPILER_PROFILE --build=missing  --build-require $EXTRA_CONAN_ARGS
 
-  conan build $DIR -s:h build_type=MinSizeRel -s:h os=baremetal -s:h arch=$ARCH --version $VERSION -pr:h $COMPILER_PROFILE --build=missing $EXTRA_CONAN_ARGS
+  conan build $DIR -pr:b default -s:h build_type=MinSizeRel -s:h os=baremetal -s:h arch=$ARCH -pr:h $COMPILER_PROFILE --build=missing  --build-require $EXTRA_CONAN_ARGS
 
-  conan build $DIR -s:h build_type=Release -s:h os=baremetal -s:h arch=$ARCH --version $VERSION -pr:h $COMPILER_PROFILE --build=missing $EXTRA_CONAN_ARGS
+  conan build $DIR -pr:b default -s:h build_type=Release -s:h os=baremetal -s:h arch=$ARCH -pr:h $COMPILER_PROFILE --build=missing  --build-require $EXTRA_CONAN_ARGS
 done

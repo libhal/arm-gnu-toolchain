@@ -1,0 +1,5 @@
+[settings]
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=14.3

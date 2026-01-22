@@ -372,3 +372,30 @@ shasum -a 256 <insert file name>
 ```
 
 Install this or the equivalent for your machine.
+
+## Testing the Package
+
+Build and test the package locally for both host and ARM Cortex-M targets:
+
+```bash
+# Test ARM Cortex-M cross-compilation
+conan create all -pr:b default -pr:h cortex-m4f -pr:h llvm-X --version X --build-require
+```
+
+This downloads the binaries, verifies checksums, and creates the package.
+
+## Build and Run the Demo
+
+Install the toolchain profiles and build the demo application:
+
+```bash
+# Install toolchain profiles
+conan config install -tf profiles/ -sf conan/profiles/v1/ .
+
+# Build the demo for ARM Cortex-M (cross-compilation)
+conan build demo -pr llvm-X -pr cortex-m4f --build=missing
+```
+
+> [!NOTE]
+> Replace `linux_x86_64` and `cortex-m4f` with your platform's profile.
+> Available profiles are in the `conan/profiles/v1/` directory.

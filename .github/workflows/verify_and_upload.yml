@@ -73,13 +73,12 @@ jobs:
         run: conan hal setup
 
       - name: 📦 Create Conan Package
-        run: conan create all --version=${{ inputs.version }}
+        run: conan create all --version=${{ inputs.version }} -pr:b default -s:h build_type=Debug -s:h os=baremetal -s:h arch=cortex-m4 -pr:h conan/profiles/v1/arm-gcc-${{ inputs.version }}-no-tool --build=missing  --build-require
 
       - name: 📦 Build packages for all Cortex-M architectures
         run: |
           bash .github/scripts/build_all_variants.sh \
             --dir demo \
-            --version ${{ inputs.version }} \
             --compiler-profile conan/profiles/v1/arm-gcc-${{ inputs.version }} \
             --conan-version 2.22.2 \
             --arch-list cortex-m0,cortex-m0plus,cortex-m1,cortex-m3,cortex-m4,cortex-m4f,cortex-m7f,cortex-m7d,cortex-m23,cortex-m33,cortex-m33f,cortex-m35pf,cortex-m55,cortex-m85
