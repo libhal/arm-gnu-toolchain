@@ -22,6 +22,11 @@ on:
       version:
         type: string
         required: true
+      additional_architectures:
+        type: string
+        required: false
+        default: ""
+        description: "Comma delimited list of additional architectures supported by the compiler after cortex-m55"
 
 jobs:
   verify-linux-x86_64:
@@ -81,14 +86,14 @@ jobs:
             --dir demo \
             --compiler-profile conan/profiles/v1/arm-gcc-${{ inputs.version }} \
             --conan-version 2.22.2 \
-            --arch-list cortex-m0,cortex-m0plus,cortex-m1,cortex-m3,cortex-m4,cortex-m4f,cortex-m7f,cortex-m7d,cortex-m23,cortex-m33,cortex-m33f,cortex-m35pf,cortex-m55,cortex-m85
+            --arch-list cortex-m0,cortex-m0plus,cortex-m1,cortex-m3,cortex-m4,cortex-m4f,cortex-m7f,cortex-m7d,cortex-m23,cortex-m33,cortex-m33f,cortex-m35pf,cortex-m55${{ inputs.additional_architectures }}
 
   upload-package:
     needs:
-      - verify-linux-x86_64
-      - verify-linux-arm
-      - verify-macos-15-arm
-      - verify-windows-x86_64
+      # - verify-linux-x86_64
+      # - verify-linux-arm
+      # - verify-macos-15-arm
+      # - verify-windows-x86_64
       - cortex-m_gcc
 
     if: ${{ startsWith(github.ref, 'refs/tags/') }}

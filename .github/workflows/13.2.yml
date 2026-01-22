@@ -9,4 +9,5 @@ jobs:
     uses: ./.github/workflows/verify_and_upload.yml
     with:
       version: "13.2"
+      additional_architectures: ",cortex-m85"
     secrets: inherit
