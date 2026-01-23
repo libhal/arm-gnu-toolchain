@@ -71,9 +71,15 @@ conan hal setup
 for ARCH in "${ARCH_LIST[@]}"; do
   echo "Building for architecture: $ARCH"
 
-  conan build $DIR -pr:b default -s:h build_type=Debug -s:h os=baremetal -s:h arch=$ARCH -pr:h $COMPILER_PROFILE --build=missing  --build-require $EXTRA_CONAN_ARGS
+  conan build $DIR -s build_type=Debug -s os=baremetal -s arch=$ARCH -pr $COMPILER_PROFILE --build=missing $EXTRA_CONAN_ARGS
 
-  conan build $DIR -pr:b default -s:h build_type=MinSizeRel -s:h os=baremetal -s:h arch=$ARCH -pr:h $COMPILER_PROFILE --build=missing  --build-require $EXTRA_CONAN_ARGS
+  rm -r $DIR/build
 
-  conan build $DIR -pr:b default -s:h build_type=Release -s:h os=baremetal -s:h arch=$ARCH -pr:h $COMPILER_PROFILE --build=missing  --build-require $EXTRA_CONAN_ARGS
+  conan build $DIR -s build_type=MinSizeRel -s os=baremetal -s arch=$ARCH -pr $COMPILER_PROFILE --build=missing $EXTRA_CONAN_ARGS
+
+  rm -r $DIR/build
+
+  conan build $DIR -s build_type=Release -s os=baremetal -s arch=$ARCH -pr $COMPILER_PROFILE --build=missing $EXTRA_CONAN_ARGS
+
+  rm -r $DIR/build
 done
