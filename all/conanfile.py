@@ -31,7 +31,8 @@ class ArmGnuToolchain(ConanFile):
         "function_sections": [True,  False],
         "data_sections": [True,  False],
         "gc_sections": [True, False],
-        "default_libc": [True, False]
+        "default_libc": [True, False],
+        "lto_compression_level": ["ANY"]
     }
 
     default_options = {
@@ -43,6 +44,7 @@ class ArmGnuToolchain(ConanFile):
         "data_sections": True,
         "gc_sections": True,
         "default_libc": True,
+        "lto_compression_level": "0",
     }
 
     options_description = {
@@ -53,7 +55,8 @@ class ArmGnuToolchain(ConanFile):
         "function_sections": "Enable -ffunction-sections which splits each function into their own subsection allowing link time garbage collection of the sections.",
         "data_sections": "Enable -fdata-sections which splits each statically defined block memory into their own subsection allowing link time garbage collection of the sections.",
         "gc_sections": "Enable garbage collection at link stage. Only useful if at least function_sections and data_sections is enabled.",
-        "default_libc": "Link against `nosys` libc specification. This injects the `--specs=nosys.specs` argument to the linker during link. `nosys`  provides weak stubs for newlib libc APIs like exit(), kill(), sbrk() etc. This allows binaries to be linked without having to define all of the newlib libc definitions up front. It is UB to call any of these APIs without adding the necessary libc APIs. This is set to True in order to allow test_packages to link. It is not advised to depend on `libc` for C API definitions."
+        "default_libc": "Link against `nosys` libc specification. This injects the `--specs=nosys.specs` argument to the linker during link. `nosys`  provides weak stubs for newlib libc APIs like exit(), kill(), sbrk() etc. This allows binaries to be linked without having to define all of the newlib libc definitions up front. It is UB to call any of these APIs without adding the necessary libc APIs. This is set to True in order to allow test_packages to link. It is not advised to depend on `libc` for C API definitions.",
+        "lto_compression_level": "This option specifies the level of compression used for intermediate language written to LTO object files, and is only meaningful in conjunction with LTO mode (-flto). GCC currently supports two LTO compression algorithms. For zstd, valid values are 0 (no compression) to 19 (maximum compression), while zlib supports values from 0 to 9. Values outside this range are clamped to either minimum or maximum of the supported values. If the option is not given, a default balanced compression setting is used."
     }
 
     LOCAL_PATH_TXT = "local_path.txt"
@@ -87,6 +90,19 @@ class ArmGnuToolchain(ConanFile):
                 f"is not supported for {self._settings_build.os}. "
                 "Pre-compiled binaries are only available for "
                 f"{supported_build_architectures[build_os]}."
+            )
+
+        # Validate LTO compression level
+        try:
+            LVL = int(self.options.lto_compression_level)
+            if LVL < 0 or LVL > 19:
+                raise ConanInvalidConfiguration(
+                    f"lto_compression_level must be between 0-19, got {LVL}"
+                )
+        except ValueError:
+            LVL = self.options.lto_compression_level
+            raise ConanInvalidConfiguration(
+                f"lto_compression_level must be an integer, got '{LVL}'"
             )
 
     def package(self):
@@ -211,6 +227,10 @@ class ArmGnuToolchain(ConanFile):
             c_flags.append("-flto")
             cxx_flags.append("-flto")
             exelinkflags.append("-flto")
+
+            LVL = int(self.options.lto_compression_level)
+            c_flags.append(f"-flto-compression-level={LVL}")
+            cxx_flags.append(f"-flto-compression-level={LVL}")
 
             if self.options.fat_lto:
                 c_flags.append("-ffat-lto-objects")
