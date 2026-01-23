@@ -22,6 +22,7 @@ class ArmGnuToolchain(ConanFile):
     exports_sources = "toolchain.cmake"
     package_type = "application"
     build_policy = "missing"
+    upload_policy = "skip"
     options = {
         "local_path": ["ANY"],
         "default_arch": [True, False],
@@ -272,11 +273,6 @@ class ArmGnuToolchain(ConanFile):
         self.conf_info.append("tools.build:exelinkflags", exelinkflags)
 
     def package_id(self):
-        del self.info.options.local_path
-        del self.info.options.default_arch
-        del self.info.options.lto
-        del self.info.options.fat_lto
-        del self.info.options.function_sections
-        del self.info.options.data_sections
-        del self.info.options.gc_sections
-        del self.info.options.default_libc
+        # Clear everything - this is a recipe-only package
+        # Users build locally by downloading binaries for their platform
+        self.info.clear()
