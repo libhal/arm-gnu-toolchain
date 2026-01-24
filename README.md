@@ -60,6 +60,22 @@ Missing Architectures:
 All binaries are downloaded from the official
 [ARM GNU Toolchain Download Page](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
 
+> [!WARNING]
+>
+> LTO is disabled for ARM GCC 14.x. From testing, it seems that LTO compression
+> support for ZSTD is enabled for Linux (maybe Windows too), but not for Mac.
+> This results in the following error when Linux built binaries are used on a
+> mac build:
+>
+> ```plaintext
+> lto1: fatal error: compiler does not support ZSTD LTO compression
+> compilation terminated.
+> lto-wrapper: fatal error: bin/arm-none-eabi-g++ returned 1 exit status
+> compilation terminated. arm-none-eabi/bin/ld: error: lto-wrapper failed
+> collect2: error: ld returned 1 exit status
+> ninja: build stopped: subcommand failed.
+> ```
+
 ## 🚀 Quick Start
 
 To use the ARM GNU Toolchain for your application, you should install the
