@@ -2,6 +2,7 @@ from pathlib import Path
 from conan import ConanFile
 from conan.tools.files import get, copy
 from conan.errors import ConanInvalidConfiguration
+from conan.tools.scm import Version
 
 
 required_conan_version = ">=2.0.0"
@@ -38,7 +39,7 @@ class ArmGnuToolchain(ConanFile):
     default_options = {
         "local_path": "",
         "default_arch": True,
-        "lto": True,
+        # "lto" default set in config_options()
         "fat_lto": True,
         "function_sections": True,
         "data_sections": True,
@@ -64,6 +65,20 @@ class ArmGnuToolchain(ConanFile):
     @property
     def _settings_build(self):
         return getattr(self, "settings_build", self.settings)
+
+    def config_options(self):
+        """Set LTO default based on compiler version"""
+        # Disable LTO for GCC 14 due to ZSTD compression incompatibilities
+        # between different build environments (Linux/macOS/Windows)
+        if self.settings_target:
+            COMPILER_VERSION = str(
+                self.settings_target.get_safe("compiler.version", ""))
+            if COMPILER_VERSION.startswith("14"):
+                self.output.debug("‼️ DISABLING LTO FOR GCC 14 ‼️")
+                self.options.lto = False
+            else:
+                self.output.debug("✅ USING LTO FOR GCC")
+                self.options.lto = True
 
     def validate(self):
         supported_build_operating_systems = ["Linux", "Macos", "Windows"]
