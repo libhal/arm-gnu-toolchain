@@ -1,5 +1,12 @@
 # ARM GNU Toolchain Repo
 
+> [!CAUTION]
+> **This package is deprecated.** Please migrate to
+> [multiarch-gnu-toolchain](https://github.com/libhal/multiarch-gnu-toolchain)
+> which provides multi-architecture support (ARM, RISC-V, Xtensa, and more) from
+> a single toolchain package. The `arm-gnu-toolchain` package will no longer
+> receive updates.
+
 A conan tool package for the ARM GNU Toolchain (`arm-none-eabi-gcc`). By adding
 this tool package to your conan build profile, your project will be cross
 compiled using this toolchain.
